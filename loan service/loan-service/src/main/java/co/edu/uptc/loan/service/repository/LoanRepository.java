@@ -19,9 +19,6 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
     // Buscar préstamos por código de aula
     List<Loan> findByClassroomCode(String classroomCode);
     
-    // Buscar préstamos por fecha
-    List<Loan> findByLoanDate(LocalDate loanDate);
-    
     // Verificar conflictos de horario en la misma aula y fecha
     @Query("SELECT l FROM Loan l WHERE l.classroomCode = :classroomCode " +
            "AND l.loanDate = :loanDate " +

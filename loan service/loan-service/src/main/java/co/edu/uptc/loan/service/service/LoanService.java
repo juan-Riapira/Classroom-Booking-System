@@ -70,6 +70,13 @@ public class LoanService {
                 .collect(Collectors.toList());
     }
 
+    // Obtener préstamo por ID
+    public LoanDTO getLoanById(Long id) {
+        Loan loan = loanRepository.findById(id)
+                .orElseThrow(() -> new LoanServiceException.LoanNotFoundException(id));
+        return convertToDTO(loan);
+    }
+
     // Obtener préstamos por usuario
     public List<LoanDTO> getLoansByUser(String userCode) {
         return loanRepository.findByUserCode(userCode)
