@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.time.temporal.WeekFields;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @Service
 public class LoanService {
@@ -22,7 +23,7 @@ public class LoanService {
     private UserService userService;
 
     // Crear préstamo con validaciones profesionales
-    public Loan createLoan(LoanDTO loanDTO) {
+    public LoanDTO createLoan(LoanDTO loanDTO) {
         // 1. Validar que el usuario existe y está activo
         if (!userService.isUserActiveByCode(loanDTO.getUserCode())) {
             throw new LoanServiceException.UserNotActiveException(loanDTO.getUserCode());
@@ -56,28 +57,38 @@ public class LoanService {
         loan.setWeekNumber(loanDTO.getLoanDate().get(WeekFields.of(Locale.getDefault()).weekOfYear()));
         loan.setMonthNumber(loanDTO.getLoanDate().getMonthValue());
 
-        return loanRepository.save(loan);
+        Loan savedLoan = loanRepository.save(loan);
+        return convertToDTO(savedLoan);
     }
 
     // Obtener todos los préstamos
-    public List<Loan> getAllLoans() {
-        return loanRepository.findAll();
+    public List<LoanDTO> getAllLoans() {
+        return loanRepository.findAll()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     // Obtener préstamos por usuario
-    public List<Loan> getLoansByUser(String userCode) {
-        return loanRepository.findByUserCode(userCode);
+    public List<LoanDTO> getLoansByUser(String userCode) {
+        return loanRepository.findByUserCode(userCode)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     // Obtener préstamos por aula
-    public List<Loan> getLoansByClassroom(String classroomCode) {
-        return loanRepository.findByClassroomCode(classroomCode);
+    public List<LoanDTO> getLoansByClassroom(String classroomCode) {
+        return loanRepository.findByClassroomCode(classroomCode)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     // === NUEVOS MÉTODOS CRUD ===
     
     // Actualizar préstamo
-    public Loan updateLoan(Long id, LoanDTO loanDTO) {
+    public LoanDTO updateLoan(Long id, LoanDTO loanDTO) {
         Loan existingLoan = loanRepository.findById(id)
                 .orElseThrow(() -> new LoanServiceException.LoanNotFoundException(id));
         
@@ -113,7 +124,8 @@ public class LoanService {
         existingLoan.setWeekNumber(loanDTO.getLoanDate().get(WeekFields.of(Locale.getDefault()).weekOfYear()));
         existingLoan.setMonthNumber(loanDTO.getLoanDate().getMonthValue());
         
-        return loanRepository.save(existingLoan);
+        Loan updatedLoan = loanRepository.save(existingLoan);
+        return convertToDTO(updatedLoan);
     }
     
     // Eliminar préstamo
@@ -125,7 +137,7 @@ public class LoanService {
     }
     
     // Cambiar estado de préstamo
-    public Loan changeStatus(Long id, String newStatus) {
+    public LoanDTO changeStatus(Long id, String newStatus) {
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new LoanServiceException.LoanNotFoundException(id));
         
@@ -134,20 +146,26 @@ public class LoanService {
         }
         
         loan.setStatus(newStatus);
-        return loanRepository.save(loan);
+        Loan updatedLoan = loanRepository.save(loan);
+        return convertToDTO(updatedLoan);
     }
     
     // Buscar por estado
-    public List<Loan> getLoansByStatus(String status) {
-        return loanRepository.findByStatus(status);
+    public List<LoanDTO> getLoansByStatus(String status) {
+        return loanRepository.findByStatus(status)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
     
     // Buscar por rango de fechas
-    public List<Loan> getLoansByDateRange(String startDate, String endDate) {
+    public List<LoanDTO> getLoansByDateRange(String startDate, String endDate) {
         return loanRepository.findByDateRange(
             java.time.LocalDate.parse(startDate),
             java.time.LocalDate.parse(endDate)
-        );
+        ).stream()
+         .map(this::convertToDTO)
+         .collect(Collectors.toList());
     }
 
     // === MÉTODOS PARA ANALYTICS ===
@@ -180,27 +198,74 @@ public class LoanService {
     // === MÉTODOS HELPER PARA GESTIÓN DE ESTADOS ===
     
     // Activar préstamo (de RESERVED a ACTIVE)
-    public Loan activateLoan(Long id) {
+    public LoanDTO activateLoan(Long id) {
         return changeStatus(id, "ACTIVE");
     }
     
     // Cancelar préstamo
-    public Loan cancelLoan(Long id) {
+    public LoanDTO cancelLoan(Long id) {
         return changeStatus(id, "CANCELLED");
     }
     
     // Obtener préstamos activos
-    public List<Loan> getActiveLoans() {
-        return loanRepository.findByStatus("ACTIVE");
+    public List<LoanDTO> getActiveLoans() {
+        return loanRepository.findByStatus("ACTIVE")
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
     
     // Obtener préstamos reservados (pendientes de activar)
-    public List<Loan> getReservedLoans() {
-        return loanRepository.findByStatus("RESERVED");
+    public List<LoanDTO> getReservedLoans() {
+        return loanRepository.findByStatus("RESERVED")
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
     
     // Obtener préstamos cancelados
-    public List<Loan> getCancelledLoans() {
-        return loanRepository.findByStatus("CANCELLED");
+    public List<LoanDTO> getCancelledLoans() {
+        return loanRepository.findByStatus("CANCELLED")
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+    
+    // === MÉTODOS DE CONVERSIÓN ENTITY ↔ DTO ===
+    
+    /**
+     * Convierte Entity a DTO para respuestas API
+     */
+    private LoanDTO convertToDTO(Loan loan) {
+        LoanDTO dto = new LoanDTO();
+        dto.setId(loan.getId());
+        dto.setUserCode(loan.getUserCode());
+        dto.setClassroomCode(loan.getClassroomCode());
+        dto.setLoanDate(loan.getLoanDate());
+        dto.setStartTime(loan.getStartTime());
+        dto.setEndTime(loan.getEndTime());
+        dto.setPurpose(loan.getPurpose());
+        dto.setStatus(loan.getStatus());
+        dto.setStartHour(loan.getStartHour());
+        dto.setDuration(loan.getDuration());
+        dto.setWeekNumber(loan.getWeekNumber());
+        dto.setMonthNumber(loan.getMonthNumber());
+        return dto;
+    }
+    
+    /**
+     * Convierte DTO a Entity para persistencia
+     */
+    private Loan convertToEntity(LoanDTO dto) {
+        Loan loan = new Loan();
+        // No setear ID para nuevas entidades
+        loan.setUserCode(dto.getUserCode());
+        loan.setClassroomCode(dto.getClassroomCode());
+        loan.setLoanDate(dto.getLoanDate());
+        loan.setStartTime(dto.getStartTime());
+        loan.setEndTime(dto.getEndTime());
+        loan.setPurpose(dto.getPurpose());
+        loan.setStatus(dto.getStatus());
+        return loan;
     }
 }

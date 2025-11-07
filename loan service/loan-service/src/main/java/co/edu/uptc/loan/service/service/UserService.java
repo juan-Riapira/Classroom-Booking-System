@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -16,7 +17,7 @@ public class UserService {
     private UserRepository userRepository;
 
     // Crear usuario
-    public User createUser(UserDTO userDTO) {
+    public UserDTO createUser(UserDTO userDTO) {
         // Verificar si ya existe el código
         if (userRepository.existsByCode(userDTO.getCode())) {
             throw new RuntimeException("Ya existe un usuario con el código: " + userDTO.getCode());
@@ -28,22 +29,30 @@ public class UserService {
         user.setUserType(userDTO.getUserType());
         user.setActive(userDTO.getActive() != null ? userDTO.getActive() : true);
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        return convertToDTO(savedUser);
     }
 
     // Obtener todos los usuarios
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDTO> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     // Obtener usuarios activos
-    public List<User> getActiveUsers() {
-        return userRepository.findByActiveTrue();
+    public List<UserDTO> getActiveUsers() {
+        return userRepository.findByActiveTrue()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     // Buscar usuario por código
-    public Optional<User> getUserByCode(String code) {
-        return userRepository.findByCode(code);
+    public Optional<UserDTO> getUserByCode(String code) {
+        return userRepository.findByCode(code)
+                .map(this::convertToDTO);
     }
 
     // Validar si usuario existe y está activo
@@ -53,7 +62,25 @@ public class UserService {
     }
 
     // Obtener usuarios por tipo
-    public List<User> getUsersByType(String userType) {
-        return userRepository.findByUserType(userType);
+    public List<UserDTO> getUsersByType(String userType) {
+        return userRepository.findByUserType(userType)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+    
+    // === MÉTODOS DE CONVERSIÓN ENTITY ↔ DTO ===
+    
+    /**
+     * Convierte Entity a DTO para respuestas API
+     */
+    private UserDTO convertToDTO(User user) {
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setCode(user.getCode());
+        dto.setName(user.getName());
+        dto.setUserType(user.getUserType());
+        dto.setActive(user.getActive());
+        return dto;
     }
 }

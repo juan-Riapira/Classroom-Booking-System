@@ -21,58 +21,48 @@ public class UserController {
 
     // POST /api/users - Crear usuario
     @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
-        try {
-            User newUser = userService.createUser(userDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Error: " + e.getMessage());
-        }
+    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
+        UserDTO newUser = userService.createUser(userDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
     }
 
     // GET /api/users - Obtener todos los usuarios
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.getAllUsers();
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        List<UserDTO> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }
 
     // GET /api/users/active - Obtener usuarios activos
     @GetMapping("/active")
-    public ResponseEntity<List<User>> getActiveUsers() {
-        List<User> activeUsers = userService.getActiveUsers();
+    public ResponseEntity<List<UserDTO>> getActiveUsers() {
+        List<UserDTO> activeUsers = userService.getActiveUsers();
         return ResponseEntity.ok(activeUsers);
     }
 
     // GET /api/users/{code} - Buscar usuario por código
     @GetMapping("/{code}")
-    public ResponseEntity<?> getUserByCode(@PathVariable String code) {
-        Optional<User> user = userService.getUserByCode(code);
-        if (user.isPresent()) {
-            return ResponseEntity.ok(user.get());
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Usuario con código " + code + " no encontrado");
-        }
+    public ResponseEntity<UserDTO> getUserByCode(@PathVariable String code) {
+        Optional<UserDTO> user = userService.getUserByCode(code);
+        return user.map(ResponseEntity::ok)
+                   .orElse(ResponseEntity.notFound().build());
     }
 
     // GET /api/users/type/{userType} - Obtener usuarios por tipo
     @GetMapping("/type/{userType}")
-    public ResponseEntity<List<User>> getUsersByType(@PathVariable String userType) {
-        List<User> users = userService.getUsersByType(userType);
+    public ResponseEntity<List<UserDTO>> getUsersByType(@PathVariable String userType) {
+        List<UserDTO> users = userService.getUsersByType(userType);
         return ResponseEntity.ok(users);
     }
 
     // GET /api/users/{code}/validate - Validar si usuario está activo
     @GetMapping("/{code}/validate")
-    public ResponseEntity<?> validateUser(@PathVariable String code) {
+    public ResponseEntity<String> validateUser(@PathVariable String code) {
         boolean isActive = userService.isUserActiveByCode(code);
         if (isActive) {
             return ResponseEntity.ok("Usuario " + code + " está activo y válido");
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Usuario " + code + " no existe o no está activo");
+            return ResponseEntity.notFound().build();
         }
     }
 }
