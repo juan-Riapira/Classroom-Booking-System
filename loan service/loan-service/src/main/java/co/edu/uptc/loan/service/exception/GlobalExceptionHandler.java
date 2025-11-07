@@ -56,6 +56,16 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(LoanServiceException.ClassroomNotAvailableException.class)
+    public ResponseEntity<Map<String, Object>> handleClassroomNotAvailable(LoanServiceException.ClassroomNotAvailableException ex) {
+        return buildErrorResponse(
+            HttpStatus.CONFLICT,
+            ex.getErrorCode(),
+            ex.getMessage(),
+            "El aula solicitada no está disponible en el horario especificado"
+        );
+    }
+
     @ExceptionHandler(LoanServiceException.class)
     public ResponseEntity<Map<String, Object>> handleLoanServiceException(LoanServiceException ex) {
         return buildErrorResponse(

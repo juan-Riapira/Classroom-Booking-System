@@ -4,6 +4,7 @@ import co.edu.uptc.loan.service.dto.LoanDTO;
 import co.edu.uptc.loan.service.model.Loan;
 import co.edu.uptc.loan.service.repository.LoanRepository;
 import co.edu.uptc.loan.service.exception.LoanServiceException;
+import co.edu.uptc.loan.service.integration.ClassroomClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,9 @@ public class LoanService {
     
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private ClassroomClient classroomClient;
 
     // Crear préstamo con validaciones profesionales
     public LoanDTO createLoan(LoanDTO loanDTO) {
@@ -26,7 +30,19 @@ public class LoanService {
             throw new LoanServiceException.UserNotActiveException(loanDTO.getUserCode());
         }
 
-        // 2. Verificar conflictos de horario
+        // 2. Validar disponibilidad del aula con classroom-service
+        boolean aulaDisponible = classroomClient.isClassroomAvailable(
+            loanDTO.getClassroomCode(),
+            loanDTO.getLoanDate().toString(),
+            loanDTO.getStartTime().toString(),
+            loanDTO.getEndTime().toString()
+        );
+        
+        if (!aulaDisponible) {
+            throw new LoanServiceException.ClassroomNotAvailableException(loanDTO.getClassroomCode());
+        }
+
+        // 3. Verificar conflictos de horario entre préstamos
         List<Loan> conflicts = loanRepository.findConflictingLoans(
             loanDTO.getClassroomCode(),
             loanDTO.getLoanDate(),
@@ -38,7 +54,7 @@ public class LoanService {
             throw new LoanServiceException.TimeConflictException(loanDTO.getClassroomCode());
         }
 
-        // 3. Crear y configurar el préstamo
+        // 4. Crear y configurar el préstamo
         Loan loan = convertToEntity(loanDTO);
         loan.setStatus(loanDTO.getStatus() != null ? loanDTO.getStatus() : "RESERVED");
 

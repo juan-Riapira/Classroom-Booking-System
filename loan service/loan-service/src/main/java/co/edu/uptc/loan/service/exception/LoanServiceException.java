@@ -51,4 +51,10 @@ public class LoanServiceException extends RuntimeException {
             super("Estado inválido '" + status + "'. Estados válidos: ACTIVE, RESERVED, CANCELLED", "INVALID_STATUS");
         }
     }
+    
+    public static class ClassroomNotAvailableException extends LoanServiceException {
+        public ClassroomNotAvailableException(String classroomCode) {
+            super("El aula '" + classroomCode + "' no está disponible en el horario solicitado", "CLASSROOM_NOT_AVAILABLE");
+        }
+    }
 }
