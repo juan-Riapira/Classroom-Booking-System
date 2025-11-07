@@ -11,7 +11,7 @@ Este microservicio se enfoca EXCLUSIVAMENTE en:
 - ❌ Analytics/Reportes (responsabilidad de reporting-service)
 - ❌ Gestión de aulas (responsabilidad de classroom-service)
 
-## 📊 **ENDPOINTS DISPONIBLES (26 TOTAL)**
+## 📊 **ENDPOINTS DISPONIBLES (28 TOTAL)**
 
 ### 🔵 **LoanController** - 15 endpoints CRUD
 ```
@@ -40,15 +40,16 @@ GET    /api/users/{code}               - Obtener usuario por código
 PUT    /api/users/{code}               - Actualizar usuario
 ```
 
-### �🟢 **LoanDataController** - 7 endpoints API de datos
+### 📊 **LoanDataController** - 8 endpoints de datos crudos
 ```
-GET    /api/loans/data/raw           - Datos sin procesar
-GET    /api/loans/data/by-hour       - Conteo por hora
-GET    /api/loans/data/by-week       - Conteo por semana
-GET    /api/loans/data/by-month      - Conteo por mes
-GET    /api/loans/data/by-status     - Conteo por estado
-GET    /api/loans/data/by-date-range - Datos en rango de fechas
-GET    /api/loans/data/summary       - Resumen de datos
+GET    /api/loans/data/raw           - Todos los préstamos (datos crudos)
+GET    /api/loans/data/by-date-range - Préstamos por rango de fechas (sin análisis)
+GET    /api/loans/data/by-status     - Préstamos por estado (sin análisis)
+GET    /api/loans/data/by-user       - Préstamos por usuario (sin análisis)
+GET    /api/loans/data/by-classroom  - Préstamos por aula (sin análisis)
+GET    /api/loans/data/active        - Préstamos activos (sin conteos)
+GET    /api/loans/data/reserved      - Préstamos reservados (sin conteos)
+GET    /api/loans/data/cancelled     - Préstamos cancelados (sin conteos)
 ```
 
 ## 🏗️ **ARQUITECTURA DE MICROSERVICIOS**
@@ -73,7 +74,7 @@ GET    /api/loans/data/summary       - Resumen de datos
 
 ### **reporting-service → loan-service**
 - Consumir `/api/loans/data/*` endpoints
-- Obtener datos para analytics
+- Obtener datos crudos para procesamiento externo
 
 ## ⚙️ **CONFIGURACIÓN**
 
@@ -91,10 +92,11 @@ spring.jpa.hibernate.ddl-auto=update
 
 ## 📋 **ESTADO ACTUAL**
 - ✅ Arquitectura limpia implementada
-- ✅ Separación de responsabilidades
-- ✅ 19 endpoints funcionales
+- ✅ Separación de responsabilidades (DIRECTRIZ DEL DIRECTOR)
+- ✅ 27 endpoints funcionales (solo datos crudos)
 - ✅ Base de datos configurada
 - ✅ Sin dockerización (acuerdo del equipo)
+- ✅ Cumple directriz: SOLO DATOS, NO ANÁLISIS
 - 🔄 Rama: `loan-service-clean-architecture`
 
 ---
