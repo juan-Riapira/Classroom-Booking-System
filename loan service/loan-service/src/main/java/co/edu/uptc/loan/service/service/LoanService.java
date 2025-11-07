@@ -42,8 +42,6 @@ public class LoanService {
         Loan loan = convertToEntity(loanDTO);
         loan.setStatus(loanDTO.getStatus() != null ? loanDTO.getStatus() : "RESERVED");
 
-      
-
         Loan savedLoan = loanRepository.save(loan);
         return convertToDTO(savedLoan);
     }
@@ -106,8 +104,6 @@ public class LoanService {
         
         // Actualizar campos usando método helper
         updateEntityFromDTO(existingLoan, loanDTO);
-        
-      
         
         Loan updatedLoan = loanRepository.save(existingLoan);
         return convertToDTO(updatedLoan);

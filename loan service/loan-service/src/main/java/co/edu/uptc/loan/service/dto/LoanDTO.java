@@ -14,8 +14,5 @@ public class LoanDTO {
     private LocalTime endTime;     // Hora fin
     private String purpose;        // Motivo o descripción del préstamo
     private String status;         // Estado: ACTIVE, RESERVED, CANCELLED
-    
-    // ✅ SOLO DATOS BASE - SIN CÁLCULOS (DIRECTRIZ DEL DIRECTOR)
-    // Los cálculos (startHour, duration, weekNumber, monthNumber) 
-    // son responsabilidad del REPORTING-SERVICE, no del loan-service
+ 
 }
