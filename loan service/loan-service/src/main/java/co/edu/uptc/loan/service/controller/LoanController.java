@@ -1,7 +1,6 @@
 package co.edu.uptc.loan.service.controller;
 
 import co.edu.uptc.loan.service.dto.LoanDTO;
-import co.edu.uptc.loan.service.model.Loan;
 import co.edu.uptc.loan.service.service.LoanService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

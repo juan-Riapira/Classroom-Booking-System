@@ -1,14 +1,16 @@
 package co.edu.uptc.loan.service.controller;
 
 import co.edu.uptc.loan.service.dto.UserDTO;
-import co.edu.uptc.loan.service.model.User;
 import co.edu.uptc.loan.service.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -57,12 +59,20 @@ public class UserController {
 
     // GET /api/users/{code}/validate - Validar si usuario está activo
     @GetMapping("/{code}/validate")
-    public ResponseEntity<String> validateUser(@PathVariable String code) {
+    public ResponseEntity<Map<String, Object>> validateUser(@PathVariable String code) {
         boolean isActive = userService.isUserActiveByCode(code);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("userCode", code);
+        response.put("isValid", isActive);
+        response.put("timestamp", LocalDateTime.now());
+        
         if (isActive) {
-            return ResponseEntity.ok("Usuario " + code + " está activo y válido");
+            response.put("message", "Usuario activo y válido para préstamos");
+            return ResponseEntity.ok(response);
         } else {
-            return ResponseEntity.notFound().build();
+            response.put("message", "Usuario no existe o está inactivo");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
     }
 }

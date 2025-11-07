@@ -42,13 +42,7 @@ public class LoanService {
         }
 
         // 3. Crear y configurar el préstamo
-        Loan loan = new Loan();
-        loan.setUserCode(loanDTO.getUserCode());
-        loan.setClassroomCode(loanDTO.getClassroomCode());
-        loan.setLoanDate(loanDTO.getLoanDate());
-        loan.setStartTime(loanDTO.getStartTime());
-        loan.setEndTime(loanDTO.getEndTime());
-        loan.setPurpose(loanDTO.getPurpose());
+        Loan loan = convertToEntity(loanDTO);
         loan.setStatus(loanDTO.getStatus() != null ? loanDTO.getStatus() : "RESERVED");
 
         // 4. Calcular campos automáticos
@@ -109,14 +103,8 @@ public class LoanService {
             throw new LoanServiceException.TimeConflictException(loanDTO.getClassroomCode());
         }
         
-        // Actualizar campos
-        existingLoan.setUserCode(loanDTO.getUserCode());
-        existingLoan.setClassroomCode(loanDTO.getClassroomCode());
-        existingLoan.setLoanDate(loanDTO.getLoanDate());
-        existingLoan.setStartTime(loanDTO.getStartTime());
-        existingLoan.setEndTime(loanDTO.getEndTime());
-        existingLoan.setPurpose(loanDTO.getPurpose());
-        existingLoan.setStatus(loanDTO.getStatus() != null ? loanDTO.getStatus() : existingLoan.getStatus());
+        // Actualizar campos usando método helper
+        updateEntityFromDTO(existingLoan, loanDTO);
         
         // Recalcular campos automáticos
         existingLoan.setStartHour(loanDTO.getStartTime().getHour());
@@ -258,7 +246,10 @@ public class LoanService {
      */
     private Loan convertToEntity(LoanDTO dto) {
         Loan loan = new Loan();
-        // No setear ID para nuevas entidades
+        // ID solo se setea si existe (para actualizaciones)
+        if (dto.getId() != null) {
+            loan.setId(dto.getId());
+        }
         loan.setUserCode(dto.getUserCode());
         loan.setClassroomCode(dto.getClassroomCode());
         loan.setLoanDate(dto.getLoanDate());
@@ -267,5 +258,18 @@ public class LoanService {
         loan.setPurpose(dto.getPurpose());
         loan.setStatus(dto.getStatus());
         return loan;
+    }
+    
+    /**
+     * Actualiza una entidad existente con datos del DTO
+     */
+    private void updateEntityFromDTO(Loan loan, LoanDTO dto) {
+        loan.setUserCode(dto.getUserCode());
+        loan.setClassroomCode(dto.getClassroomCode());
+        loan.setLoanDate(dto.getLoanDate());
+        loan.setStartTime(dto.getStartTime());
+        loan.setEndTime(dto.getEndTime());
+        loan.setPurpose(dto.getPurpose());
+        loan.setStatus(dto.getStatus() != null ? dto.getStatus() : loan.getStatus());
     }
 }
