@@ -1,0 +1,54 @@
+package co.edu.uptc.loan.service.exception;
+
+/**
+ * Excepción personalizada para errores específicos del loan-service
+ * Proporciona mensajes claros para validaciones de negocio
+ */
+public class LoanServiceException extends RuntimeException {
+    
+    private final String errorCode;
+    
+    public LoanServiceException(String message) {
+        super(message);
+        this.errorCode = "LOAN_ERROR";
+    }
+    
+    public LoanServiceException(String message, String errorCode) {
+        super(message);
+        this.errorCode = errorCode;
+    }
+    
+    public LoanServiceException(String message, Throwable cause) {
+        super(message, cause);
+        this.errorCode = "LOAN_ERROR";
+    }
+    
+    public String getErrorCode() {
+        return errorCode;
+    }
+    
+    // Excepciones específicas para validaciones
+    public static class UserNotActiveException extends LoanServiceException {
+        public UserNotActiveException(String userCode) {
+            super("Usuario con código '" + userCode + "' no existe o no está activo", "USER_NOT_ACTIVE");
+        }
+    }
+    
+    public static class TimeConflictException extends LoanServiceException {
+        public TimeConflictException(String classroomCode) {
+            super("Ya existe un préstamo en ese horario para el aula '" + classroomCode + "'", "TIME_CONFLICT");
+        }
+    }
+    
+    public static class LoanNotFoundException extends LoanServiceException {
+        public LoanNotFoundException(Long id) {
+            super("Préstamo no encontrado con ID: " + id, "LOAN_NOT_FOUND");
+        }
+    }
+    
+    public static class InvalidStatusException extends LoanServiceException {
+        public InvalidStatusException(String status) {
+            super("Estado inválido '" + status + "'. Estados válidos: ACTIVE, RESERVED, CANCELLED", "INVALID_STATUS");
+        }
+    }
+}

@@ -20,14 +20,9 @@ public class LoanController {
 
     // POST /api/loans - Crear préstamo
     @PostMapping
-    public ResponseEntity<?> createLoan(@RequestBody LoanDTO loanDTO) {
-        try {
-            Loan newLoan = loanService.createLoan(loanDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(newLoan);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Error: " + e.getMessage());
-        }
+    public ResponseEntity<Loan> createLoan(@RequestBody LoanDTO loanDTO) {
+        Loan newLoan = loanService.createLoan(loanDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newLoan);
     }
 
     // GET /api/loans - Obtener todos los préstamos

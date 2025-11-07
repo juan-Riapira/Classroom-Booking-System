@@ -3,6 +3,7 @@ package co.edu.uptc.loan.service.service;
 import co.edu.uptc.loan.service.dto.LoanDTO;
 import co.edu.uptc.loan.service.model.Loan;
 import co.edu.uptc.loan.service.repository.LoanRepository;
+import co.edu.uptc.loan.service.exception.LoanServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +21,11 @@ public class LoanService {
     @Autowired
     private UserService userService;
 
-    // Crear préstamo
+    // Crear préstamo con validaciones profesionales
     public Loan createLoan(LoanDTO loanDTO) {
         // 1. Validar que el usuario existe y está activo
         if (!userService.isUserActiveByCode(loanDTO.getUserCode())) {
-            throw new RuntimeException("El usuario con código " + loanDTO.getUserCode() + 
-                                     " no existe o no está activo");
+            throw new LoanServiceException.UserNotActiveException(loanDTO.getUserCode());
         }
 
         // 2. Verificar conflictos de horario
@@ -37,8 +37,7 @@ public class LoanService {
         );
 
         if (!conflicts.isEmpty()) {
-            throw new RuntimeException("Ya existe un préstamo en ese horario para el aula " + 
-                                     loanDTO.getClassroomCode());
+            throw new LoanServiceException.TimeConflictException(loanDTO.getClassroomCode());
         }
 
         // 3. Crear y configurar el préstamo
@@ -80,12 +79,11 @@ public class LoanService {
     // Actualizar préstamo
     public Loan updateLoan(Long id, LoanDTO loanDTO) {
         Loan existingLoan = loanRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Préstamo no encontrado con ID: " + id));
+                .orElseThrow(() -> new LoanServiceException.LoanNotFoundException(id));
         
         // Validar usuario activo
         if (!userService.isUserActiveByCode(loanDTO.getUserCode())) {
-            throw new RuntimeException("El usuario con código " + loanDTO.getUserCode() + 
-                                     " no existe o no está activo");
+            throw new LoanServiceException.UserNotActiveException(loanDTO.getUserCode());
         }
         
         // Verificar conflictos (excluyendo el préstamo actual)
@@ -97,8 +95,7 @@ public class LoanService {
         ).stream().filter(l -> !l.getId().equals(id)).toList();
         
         if (!conflicts.isEmpty()) {
-            throw new RuntimeException("Ya existe un préstamo en ese horario para el aula " + 
-                                     loanDTO.getClassroomCode());
+            throw new LoanServiceException.TimeConflictException(loanDTO.getClassroomCode());
         }
         
         // Actualizar campos
@@ -122,7 +119,7 @@ public class LoanService {
     // Eliminar préstamo
     public void deleteLoan(Long id) {
         if (!loanRepository.existsById(id)) {
-            throw new RuntimeException("Préstamo no encontrado con ID: " + id);
+            throw new LoanServiceException.LoanNotFoundException(id);
         }
         loanRepository.deleteById(id);
     }
@@ -130,10 +127,10 @@ public class LoanService {
     // Cambiar estado de préstamo
     public Loan changeStatus(Long id, String newStatus) {
         Loan loan = loanRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Préstamo no encontrado con ID: " + id));
+                .orElseThrow(() -> new LoanServiceException.LoanNotFoundException(id));
         
         if (!List.of("ACTIVE", "RESERVED", "CANCELLED").contains(newStatus)) {
-            throw new RuntimeException("Estado inválido. Use: ACTIVE, RESERVED, CANCELLED");
+            throw new LoanServiceException.InvalidStatusException(newStatus);
         }
         
         loan.setStatus(newStatus);
