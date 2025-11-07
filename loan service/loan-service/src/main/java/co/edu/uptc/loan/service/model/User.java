@@ -14,5 +14,6 @@ public class User {
     private String code;       // Código institucional del usuario
     private String name;       // Nombre completo
     private String userType;   // STUDENT o TEACHER
+    private String academicProgram; // Programa académico (Ej: Ingenieria-de-Sistemas)
     private Boolean active = true; // Estado activo o inactivo
 }

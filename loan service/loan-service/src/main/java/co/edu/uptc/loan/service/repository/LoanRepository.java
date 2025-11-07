@@ -68,4 +68,8 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
     @Query("SELECT l FROM Loan l WHERE l.loanDate BETWEEN :startDate AND :endDate")
     List<Loan> findByDateRange(@Param("startDate") LocalDate startDate, 
                               @Param("endDate") LocalDate endDate);
+                              
+    // Buscar préstamos por programa académico del usuario
+    @Query("SELECT l FROM Loan l JOIN User u ON l.userCode = u.code WHERE u.academicProgram = :academicProgram")
+    List<Loan> findByUser_AcademicProgram(@Param("academicProgram") String academicProgram);
 }

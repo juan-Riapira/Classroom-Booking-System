@@ -57,6 +57,13 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
+    // GET /api/users/program/{program} - Obtener usuarios por programa académico
+    @GetMapping("/program/{program}")
+    public ResponseEntity<List<UserDTO>> getUsersByProgram(@PathVariable String program) {
+        List<UserDTO> users = userService.getUsersByAcademicProgram(program);
+        return ResponseEntity.ok(users);
+    }
+
     // GET /api/users/{code}/validate - Validar si usuario está activo
     @GetMapping("/{code}/validate")
     public ResponseEntity<Map<String, Object>> validateUser(@PathVariable String code) {

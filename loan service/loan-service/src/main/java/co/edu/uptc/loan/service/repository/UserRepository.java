@@ -19,6 +19,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // Buscar por tipo de usuario (STUDENT o TEACHER)
     List<User> findByUserType(String userType);
     
+    // Buscar usuarios por programa académico
+    List<User> findByAcademicProgram(String academicProgram);
+    
     // Verificar si existe un usuario con ese código
     boolean existsByCode(String code);
 }

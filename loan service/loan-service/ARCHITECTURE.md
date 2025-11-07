@@ -11,7 +11,7 @@ Este microservicio se enfoca EXCLUSIVAMENTE en:
 - ❌ Analytics/Reportes (responsabilidad de reporting-service)
 - ❌ Gestión de aulas (responsabilidad de classroom-service)
 
-## 📊 **ENDPOINTS DISPONIBLES (28 TOTAL)**
+## 📊 **ENDPOINTS DISPONIBLES (30 TOTAL)**
 
 ### 🔵 **LoanController** - 15 endpoints CRUD
 ```
@@ -32,21 +32,24 @@ GET    /api/loans/reserved             - Préstamos reservados
 GET    /api/loans/cancelled            - Préstamos cancelados
 ```
 
-### � **UserController** - 4 endpoints usuarios
+### 👥 **UserController** - 6 endpoints usuarios
 ```
 POST   /api/users                      - Crear usuario
 GET    /api/users                      - Listar todos los usuarios
 GET    /api/users/{code}               - Obtener usuario por código
-PUT    /api/users/{code}               - Actualizar usuario
+GET    /api/users/type/{userType}      - Usuarios por tipo (STUDENT/TEACHER)
+GET    /api/users/program/{program}    - Usuarios por programa académico ⭐ NUEVO
+GET    /api/users/{code}/validate      - Validar si usuario está activo
 ```
 
-### 📊 **LoanDataController** - 8 endpoints de datos crudos
+### 📊 **LoanDataController** - 9 endpoints de datos crudos
 ```
 GET    /api/loans/data/raw           - Todos los préstamos (datos crudos)
 GET    /api/loans/data/by-date-range - Préstamos por rango de fechas (sin análisis)
 GET    /api/loans/data/by-status     - Préstamos por estado (sin análisis)
 GET    /api/loans/data/by-user       - Préstamos por usuario (sin análisis)
 GET    /api/loans/data/by-classroom  - Préstamos por aula (sin análisis)
+GET    /api/loans/data/by-program    - Préstamos por programa académico ⭐ NUEVO
 GET    /api/loans/data/active        - Préstamos activos (sin conteos)
 GET    /api/loans/data/reserved      - Préstamos reservados (sin conteos)
 GET    /api/loans/data/cancelled     - Préstamos cancelados (sin conteos)
@@ -92,11 +95,10 @@ spring.jpa.hibernate.ddl-auto=update
 
 ## 📋 **ESTADO ACTUAL**
 - ✅ Arquitectura limpia implementada
-- ✅ Separación de responsabilidades (DIRECTRIZ DEL DIRECTOR)
-- ✅ 27 endpoints funcionales (solo datos crudos)
+- ✅ Separación de responsabilidades 
+- ✅ 30 endpoints funcionales (solo datos crudos)
+- ✅ Campo 'PROGRAMA' académico implementado (DTIC requirement)
 - ✅ Base de datos configurada
-- ✅ Sin dockerización (acuerdo del equipo)
-- ✅ Cumple directriz: SOLO DATOS, NO ANÁLISIS
 - 🔄 Rama: `loan-service-clean-architecture`
 
 ---

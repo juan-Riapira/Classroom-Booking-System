@@ -79,6 +79,14 @@ public class LoanService {
                 .collect(Collectors.toList());
     }
 
+    // Obtener préstamos por programa académico del usuario
+    public List<LoanDTO> getLoansByAcademicProgram(String academicProgram) {
+        return loanRepository.findByUser_AcademicProgram(academicProgram)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     // === NUEVOS MÉTODOS CRUD ===
     
     // Actualizar préstamo

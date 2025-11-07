@@ -27,6 +27,7 @@ public class UserService {
         user.setCode(userDTO.getCode());
         user.setName(userDTO.getName());
         user.setUserType(userDTO.getUserType());
+        user.setAcademicProgram(userDTO.getAcademicProgram());
         user.setActive(userDTO.getActive() != null ? userDTO.getActive() : true);
 
         User savedUser = userRepository.save(user);
@@ -68,6 +69,14 @@ public class UserService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+
+    // Obtener usuarios por programa académico
+    public List<UserDTO> getUsersByAcademicProgram(String academicProgram) {
+        return userRepository.findByAcademicProgram(academicProgram)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
     
     // === MÉTODOS DE CONVERSIÓN ENTITY ↔ DTO ===
     
@@ -80,6 +89,7 @@ public class UserService {
         dto.setCode(user.getCode());
         dto.setName(user.getName());
         dto.setUserType(user.getUserType());
+        dto.setAcademicProgram(user.getAcademicProgram());
         dto.setActive(user.getActive());
         return dto;
     }
