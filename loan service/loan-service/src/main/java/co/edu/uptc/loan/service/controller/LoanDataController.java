@@ -9,13 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * LoanDataController - Solo provee datos sin procesar para reporting-service
- * NOTA IMPORTANTE:
- * "Loan-Service no calcula ni analiza, solo provee la información base 
- * (los datos limpios y validados de los préstamos)."
- * 
- * RESPONSABILIDAD: Solo endpoints de datos sin procesar.
- * Los cálculos y análisis son responsabilidad del reporting-service.
+ * LoanDataController - Provee datos de préstamos para reporting-service
  */
 @RestController
 @RequestMapping("/api/loans/data")
@@ -62,7 +56,6 @@ public class LoanDataController {
         return ResponseEntity.ok(loans);
     }
     
-    // ✅ NUEVO: Filtro simple por programa académico (sin cálculos)
     @GetMapping("/by-program")
     public ResponseEntity<List<LoanDTO>> getLoansByAcademicProgram(@RequestParam String academicProgram) {
         List<LoanDTO> loans = loanService.getLoansByAcademicProgram(academicProgram);

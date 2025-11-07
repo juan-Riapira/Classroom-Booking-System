@@ -33,34 +33,6 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
                                    @Param("startTime") LocalTime startTime,
                                    @Param("endTime") LocalTime endTime);
     
-    // Buscar préstamos por semana
-    List<Loan> findByWeekNumber(Integer weekNumber);
-    
-    // Buscar préstamos por mes
-    List<Loan> findByMonthNumber(Integer monthNumber);
-    
-    // Consulta para análisis por hora (orden cronológico)
-    @Query("SELECT l.startHour, COUNT(l) FROM Loan l GROUP BY l.startHour ORDER BY l.startHour")
-    List<Object[]> getHourFrequency();
-    
-    // Horarios con MAYOR frecuencia (más usados primero)
-    @Query("SELECT l.startHour, COUNT(l) as frequency FROM Loan l " +
-           "GROUP BY l.startHour ORDER BY frequency DESC")
-    List<Object[]> getHourFrequencyDesc();
-    
-    // Horarios con MENOR frecuencia (menos usados primero)
-    @Query("SELECT l.startHour, COUNT(l) as frequency FROM Loan l " +
-           "GROUP BY l.startHour ORDER BY frequency ASC")
-    List<Object[]> getHourFrequencyAsc();
-    
-    // Consulta para análisis por semana
-    @Query("SELECT l.weekNumber, COUNT(l) FROM Loan l GROUP BY l.weekNumber ORDER BY l.weekNumber")
-    List<Object[]> getWeekFrequency();
-    
-    // Consulta para análisis por mes
-    @Query("SELECT l.monthNumber, COUNT(l) FROM Loan l GROUP BY l.monthNumber ORDER BY l.monthNumber")
-    List<Object[]> getMonthFrequency();
-    
     // Búsquedas por estado
     List<Loan> findByStatus(String status);
     

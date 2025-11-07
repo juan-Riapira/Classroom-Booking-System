@@ -17,10 +17,6 @@ public class Loan {
     private LocalDate loanDate;    // Fecha del préstamo
     private LocalTime startTime;   // Hora inicio
     private LocalTime endTime;     // Hora fin
-    private Integer startHour;     // Hora numérica (para análisis)
-    private Integer duration;      // Duración en minutos
-    private Integer weekNumber;    // Semana del año
-    private Integer monthNumber;   // Mes
     private String purpose;        // Motivo o descripción del préstamo
     private String status = "RESERVED"; // Estado: ACTIVE, RESERVED, CANCELLED
 }

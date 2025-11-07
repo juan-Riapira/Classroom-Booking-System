@@ -7,10 +7,7 @@ import co.edu.uptc.loan.service.exception.LoanServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.temporal.WeekFields;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,11 +42,7 @@ public class LoanService {
         Loan loan = convertToEntity(loanDTO);
         loan.setStatus(loanDTO.getStatus() != null ? loanDTO.getStatus() : "RESERVED");
 
-        // 4. Calcular campos automáticos
-        loan.setStartHour(loanDTO.getStartTime().getHour());
-        loan.setDuration((int) Duration.between(loanDTO.getStartTime(), loanDTO.getEndTime()).toMinutes());
-        loan.setWeekNumber(loanDTO.getLoanDate().get(WeekFields.of(Locale.getDefault()).weekOfYear()));
-        loan.setMonthNumber(loanDTO.getLoanDate().getMonthValue());
+      
 
         Loan savedLoan = loanRepository.save(loan);
         return convertToDTO(savedLoan);
@@ -114,11 +107,7 @@ public class LoanService {
         // Actualizar campos usando método helper
         updateEntityFromDTO(existingLoan, loanDTO);
         
-        // Recalcular campos automáticos
-        existingLoan.setStartHour(loanDTO.getStartTime().getHour());
-        existingLoan.setDuration((int) Duration.between(loanDTO.getStartTime(), loanDTO.getEndTime()).toMinutes());
-        existingLoan.setWeekNumber(loanDTO.getLoanDate().get(WeekFields.of(Locale.getDefault()).weekOfYear()));
-        existingLoan.setMonthNumber(loanDTO.getLoanDate().getMonthValue());
+      
         
         Loan updatedLoan = loanRepository.save(existingLoan);
         return convertToDTO(updatedLoan);
@@ -162,33 +151,6 @@ public class LoanService {
         ).stream()
          .map(this::convertToDTO)
          .collect(Collectors.toList());
-    }
-
-    // === MÉTODOS PARA ANALYTICS ===
-    
-    // Frecuencia de uso por hora (orden cronológico)
-    public List<Object[]> getHourFrequency() {
-        return loanRepository.getHourFrequency();
-    }
-
-    // Horarios con MAYOR frecuencia de préstamos
-    public List<Object[]> getHourFrequencyHighest() {
-        return loanRepository.getHourFrequencyDesc();
-    }
-
-    // Horarios con MENOR frecuencia de préstamos
-    public List<Object[]> getHourFrequencyLowest() {
-        return loanRepository.getHourFrequencyAsc();
-    }
-
-    // Frecuencia de uso por semana
-    public List<Object[]> getWeekFrequency() {
-        return loanRepository.getWeekFrequency();
-    }
-
-    // Frecuencia de uso por mes
-    public List<Object[]> getMonthFrequency() {
-        return loanRepository.getMonthFrequency();
     }
     
     // === MÉTODOS HELPER PARA GESTIÓN DE ESTADOS ===
@@ -242,10 +204,7 @@ public class LoanService {
         dto.setEndTime(loan.getEndTime());
         dto.setPurpose(loan.getPurpose());
         dto.setStatus(loan.getStatus());
-        dto.setStartHour(loan.getStartHour());
-        dto.setDuration(loan.getDuration());
-        dto.setWeekNumber(loan.getWeekNumber());
-        dto.setMonthNumber(loan.getMonthNumber());
+        
         return dto;
     }
     

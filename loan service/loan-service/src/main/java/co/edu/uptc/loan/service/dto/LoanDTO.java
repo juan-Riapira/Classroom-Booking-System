@@ -15,9 +15,7 @@ public class LoanDTO {
     private String purpose;        // Motivo o descripción del préstamo
     private String status;         // Estado: ACTIVE, RESERVED, CANCELLED
     
-    // Campos calculados (para respuestas)
-    private Integer startHour;     // Hora de inicio (número)
-    private Integer duration;      // Duración en minutos
-    private Integer weekNumber;    // Número de semana
-    private Integer monthNumber;   // Número de mes
+    // ✅ SOLO DATOS BASE - SIN CÁLCULOS (DIRECTRIZ DEL DIRECTOR)
+    // Los cálculos (startHour, duration, weekNumber, monthNumber) 
+    // son responsabilidad del REPORTING-SERVICE, no del loan-service
 }
