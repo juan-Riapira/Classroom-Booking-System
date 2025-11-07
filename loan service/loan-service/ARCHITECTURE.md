@@ -11,25 +11,36 @@ Este microservicio se enfoca EXCLUSIVAMENTE en:
 - ❌ Analytics/Reportes (responsabilidad de reporting-service)
 - ❌ Gestión de aulas (responsabilidad de classroom-service)
 
-## 📊 **ENDPOINTS DISPONIBLES (19 TOTAL)**
+## 📊 **ENDPOINTS DISPONIBLES (26 TOTAL)**
 
-### 🔵 **LoanController** - 12 endpoints CRUD
+### 🔵 **LoanController** - 15 endpoints CRUD
 ```
-POST   /api/loans              - Crear préstamo
-GET    /api/loans              - Listar todos los préstamos
-GET    /api/loans/{id}         - Obtener préstamo por ID
-PUT    /api/loans/{id}         - Actualizar préstamo
-DELETE /api/loans/{id}         - Eliminar préstamo
-GET    /api/loans/user/{userId} - Préstamos por usuario
-GET    /api/loans/classroom/{classroomId} - Préstamos por aula
-GET    /api/loans/status/{status} - Préstamos por estado
-GET    /api/loans/date-range   - Préstamos en rango de fechas
-POST   /api/loans/{id}/reserve - Reservar préstamo
-POST   /api/loans/{id}/cancel  - Cancelar préstamo
-GET    /api/loans/active       - Préstamos activos
+POST   /api/loans                      - Crear préstamo
+GET    /api/loans                      - Listar todos los préstamos
+GET    /api/loans/{id}                 - Obtener préstamo por ID
+PUT    /api/loans/{id}                 - Actualizar préstamo
+DELETE /api/loans/{id}                 - Eliminar préstamo
+PATCH  /api/loans/{id}/status          - Cambiar estado genérico
+PATCH  /api/loans/{id}/activate        - Activar préstamo
+PATCH  /api/loans/{id}/cancel          - Cancelar préstamo
+GET    /api/loans/user/{userCode}      - Préstamos por usuario
+GET    /api/loans/classroom/{code}     - Préstamos por aula
+GET    /api/loans/status/{status}      - Préstamos por estado
+GET    /api/loans/date-range           - Préstamos en rango de fechas
+GET    /api/loans/active               - Préstamos activos
+GET    /api/loans/reserved             - Préstamos reservados
+GET    /api/loans/cancelled            - Préstamos cancelados
 ```
 
-### 🟢 **LoanDataController** - 7 endpoints API de datos
+### � **UserController** - 4 endpoints usuarios
+```
+POST   /api/users                      - Crear usuario
+GET    /api/users                      - Listar todos los usuarios
+GET    /api/users/{code}               - Obtener usuario por código
+PUT    /api/users/{code}               - Actualizar usuario
+```
+
+### �🟢 **LoanDataController** - 7 endpoints API de datos
 ```
 GET    /api/loans/data/raw           - Datos sin procesar
 GET    /api/loans/data/by-hour       - Conteo por hora
@@ -68,12 +79,12 @@ GET    /api/loans/data/summary       - Resumen de datos
 
 ### **Base de datos**
 - MySQL 8.0
-- Puerto: 8081
+- Puerto: 8082
 - Database: loan_service_db
 
 ### **Properties**
 ```properties
-server.port=8081
+server.port=8082
 spring.datasource.url=jdbc:mysql://localhost:3306/loan_service_db
 spring.jpa.hibernate.ddl-auto=update
 ```
