@@ -64,14 +64,14 @@ GET    /api/loans/data/summary       - Resumen de datos
 - Consumir `/api/loans/data/*` endpoints
 - Obtener datos para analytics
 
-## 🚀 **DEPLOYMENT**
+## ⚙️ **CONFIGURACIÓN**
 
-### **Docker**
+### **Base de datos**
+- MySQL 8.0
 - Puerto: 8081
-- Base de datos: MySQL 8.0
-- Imagen: `jawbreaker074/loan-service:latest`
+- Database: loan_service_db
 
-### **Configuración**
+### **Properties**
 ```properties
 server.port=8081
 spring.datasource.url=jdbc:mysql://localhost:3306/loan_service_db
@@ -82,8 +82,8 @@ spring.jpa.hibernate.ddl-auto=update
 - ✅ Arquitectura limpia implementada
 - ✅ Separación de responsabilidades
 - ✅ 19 endpoints funcionales
-- ✅ Dockerizado y desplegado
 - ✅ Base de datos configurada
+- ✅ Sin dockerización (acuerdo del equipo)
 - 🔄 Rama: `loan-service-clean-architecture`
 
 ---
