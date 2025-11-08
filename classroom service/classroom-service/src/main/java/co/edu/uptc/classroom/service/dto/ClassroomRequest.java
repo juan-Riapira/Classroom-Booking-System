@@ -21,4 +21,6 @@ public class ClassroomRequest {
     private int capacity;
 
     private String location;
+
+    private String state;
 }

@@ -20,6 +20,8 @@ public class Classroom {
     @Column(nullable = false)
     private String name;
 
+    private String state;
     private int capacity;
     private String location;
+
 }

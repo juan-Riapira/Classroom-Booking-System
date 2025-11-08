@@ -44,6 +44,7 @@ public class ClassroomService {
                 .name(dto.getName())
                 .capacity(dto.getCapacity())
                 .location(dto.getLocation())
+                .state(dto.getState())
                 .build();
 
         Classroom saved = classroomRepository.save(classroom);
