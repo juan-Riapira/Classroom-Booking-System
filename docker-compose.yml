@@ -13,6 +13,20 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - classroom-network
+    
+  reporting-service:
+    build: "./reporting service/reporting-service"
+    container_name: reporting-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/classroombookingdb?allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    networks:
+      - classroom-network
 
 volumes:
   mysql_data:
