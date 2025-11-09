@@ -13,7 +13,7 @@ public class Loan {
     private Long id;
 
     private String userCode;       // Código del usuario que solicita
-    private String classroomCode;  // Código del aula reservada
+    private Long classroomCode;  // Código del aula reservada
     private LocalDate loanDate;    // Fecha del préstamo
     private LocalTime startTime;   // Hora inicio
     private LocalTime endTime;     // Hora fin

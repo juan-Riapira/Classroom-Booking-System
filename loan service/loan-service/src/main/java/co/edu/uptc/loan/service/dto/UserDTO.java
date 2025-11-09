@@ -1,8 +1,11 @@
 package co.edu.uptc.loan.service.dto;
 
 import lombok.Data;
+import lombok.Setter;
+import lombok.Getter;
 
-@Data
+@Getter
+@Setter
 public class UserDTO {
     private Long id;           // ID del usuario (para respuestas)
     private String code;       // Código institucional del usuario
