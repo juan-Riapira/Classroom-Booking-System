@@ -17,6 +17,9 @@ public class ClassroomRequest {
     @NotBlank
     private String name;
 
+    @NotBlank
+    private String code;
+
     @Positive
     private int capacity;
 

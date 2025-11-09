@@ -10,6 +10,7 @@ import lombok.*;
 public class ClassroomResponse {
     private Long id;
     private String name;
+    private String code;
     private int capacity; 
     private String location;
     private String state;

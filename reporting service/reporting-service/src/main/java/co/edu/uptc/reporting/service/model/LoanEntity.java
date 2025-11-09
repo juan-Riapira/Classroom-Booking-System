@@ -3,7 +3,7 @@ package co.edu.uptc.reporting.service.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "loan")
+@Table(name = "loans")
 public class LoanEntity {
 
     @Id

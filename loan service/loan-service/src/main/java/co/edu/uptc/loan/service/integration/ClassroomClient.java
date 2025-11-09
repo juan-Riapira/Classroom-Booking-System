@@ -52,11 +52,13 @@ public class ClassroomClient {
 
             if (response.getBody() != null) {
                 String status = (String) response.getBody().get("state");
-                String name =(String) response.getBody().get("name"); 
+                String name = (String) response.getBody().get("name"); 
 
-                System.out.println("✅ Aula encontrada con estado: " + status+"nombre" +name);
+                System.out.println("✅ Aula encontrada: " + name + " con estado: " + status);
 
-                if ("AVAILABLE".equalsIgnoreCase(status)) {
+                // Si el estado es AVAILABLE o null (aula disponible por defecto), permitir préstamo
+                if ("AVAILABLE".equalsIgnoreCase(status) || status == null) {
+                    System.out.println("✅ Aula disponible para préstamo");
                     return true;
                 } else {
                     System.out.println("❌ Aula no disponible. Estado actual: " + status);

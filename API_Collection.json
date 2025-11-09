@@ -1,0 +1,332 @@
+{
+	"info": {
+		"_postman_id": "12345678-1234-1234-1234-123456789abc",
+		"name": "Classroom Booking System",
+		"description": "Endpoints basicos para testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Crear Aula",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Laboratorio 101\",\n  \"code\": \"LAB101\",\n  \"capacity\": 30,\n  \"location\": \"Edificio A\",\n  \"state\": \"AVAILABLE\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/classrooms",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"classrooms"
+					]
+				}
+			}
+		},
+		{
+			"name": "Listar Aulas",
+			"request": {
+				"method": "GET",
+				"url": {
+					"raw": "http://localhost:8081/api/classrooms",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"classrooms"
+					]
+				}
+			}
+		},
+		{
+			"name": "Obtener Aula por ID",
+			"request": {
+				"method": "GET",
+				"url": {
+					"raw": "http://localhost:8081/api/classrooms/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"classrooms",
+						"1"
+					]
+				}
+			}
+		},
+		{
+			"name": "Crear Usuario",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"code\": \"U001\",\n  \"name\": \"Juan Perez\",\n  \"userType\": \"STUDENT\",\n  \"academicProgram\": \"Ingenieria Sistemas\",\n  \"active\": true\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8082/api/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			}
+		},
+		{
+			"name": "Listar Usuarios",
+			"request": {
+				"method": "GET",
+				"url": {
+					"raw": "http://localhost:8082/api/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			}
+		},
+		{
+			"name": "Validar Usuario",
+			"request": {
+				"method": "GET",
+				"url": {
+					"raw": "http://localhost:8082/api/users/U001/validate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"api",
+						"users",
+						"U001",
+						"validate"
+					]
+				}
+			}
+		},
+		{
+			"name": "Crear Prestamo",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userCode\": \"U001\",\n  \"classroomCode\": 1,\n  \"loanDate\": \"2025-11-10\",\n  \"startTime\": \"08:00\",\n  \"endTime\": \"10:00\",\n  \"purpose\": \"Clase de programacion\",\n  \"status\": \"RESERVED\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8082/api/loans",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"api",
+						"loans"
+					]
+				}
+			}
+		},
+		{
+			"name": "Listar Prestamos",
+			"request": {
+				"method": "GET",
+				"url": {
+					"raw": "http://localhost:8082/api/loans",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"api",
+						"loans"
+					]
+				}
+			}
+		},
+		{
+			"name": "Activar Prestamo",
+			"request": {
+				"method": "PATCH",
+				"url": {
+					"raw": "http://localhost:8082/api/loans/1/activate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"api",
+						"loans",
+						"1",
+						"activate"
+					]
+				}
+			}
+		},
+		{
+			"name": "Cancelar Prestamo",
+			"request": {
+				"method": "PATCH",
+				"url": {
+					"raw": "http://localhost:8082/api/loans/1/cancel",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"api",
+						"loans",
+						"1",
+						"cancel"
+					]
+				}
+			}
+		},
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"url": {
+					"raw": "http://localhost:8082/api/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"api",
+						"health"
+					]
+				}
+			}
+		},
+		{
+			"name": "Prestamos por Usuario",
+			"request": {
+				"method": "GET",
+				"url": {
+					"raw": "http://localhost:8082/api/loans/user/U001",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"api",
+						"loans",
+						"user",
+						"U001"
+					]
+				}
+			}
+		},
+		{
+			"name": "Eliminar Aula",
+			"request": {
+				"method": "DELETE",
+				"url": {
+					"raw": "http://localhost:8081/api/classrooms/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"classrooms",
+						"1"
+					]
+				}
+			}
+		},
+		{
+			"name": "Eliminar Prestamo",
+			"request": {
+				"method": "DELETE",
+				"url": {
+					"raw": "http://localhost:8082/api/loans/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"api",
+						"loans",
+						"1"
+					]
+				}
+			}
+		},
+		{
+			"name": "Actualizar Aula",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Laboratorio 101 Actualizado\",\n  \"code\": \"LAB101\",\n  \"capacity\": 35,\n  \"location\": \"Edificio A - Piso 2\",\n  \"state\": \"AVAILABLE\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/classrooms/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"classrooms",
+						"1"
+					]
+				}
+			}
+		}
+	]
+}

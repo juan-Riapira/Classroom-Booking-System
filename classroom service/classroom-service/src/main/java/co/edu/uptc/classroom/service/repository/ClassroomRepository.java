@@ -10,7 +10,17 @@ import java.util.Optional;
 public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
     
     /**
-     * Busca un aula por su nombre/código
+     * Busca un aula por su nombre
      */
     Optional<Classroom> findByName(String name);
+    
+    /**
+     * Busca un aula por su código
+     */
+    Optional<Classroom> findByCode(String code);
+    
+    /**
+     * Verifica si existe un aula con el código dado
+     */
+    boolean existsByCode(String code);
 }

@@ -24,51 +24,86 @@ public class LoanService {
     private ClassroomClient classroomClient;
 
     // Crear préstamo con validaciones profesionales
-   public LoanDTO createLoan(LoanDTO loanDTO) {
-    // 1️⃣ Validar que el usuario existe y está activo
-    //if (!userService.isUserActiveByCode(loanDTO.getUserCode())) {
-       // throw new LoanServiceException.UserNotActiveException(loanDTO.getUserCode());
- //   }
+    public LoanDTO createLoan(LoanDTO loanDTO) {
+        // 🔍 Validaciones de datos básicos
+        if (loanDTO == null) {
+            throw new IllegalArgumentException("Los datos del préstamo no pueden ser nulos");
+        }
+        if (loanDTO.getUserCode() == null || loanDTO.getUserCode().trim().isEmpty()) {
+            throw new IllegalArgumentException("El código de usuario es obligatorio");
+        }
+        if (loanDTO.getClassroomCode() == null) {
+            throw new IllegalArgumentException("El código del aula es obligatorio");
+        }
+        if (loanDTO.getLoanDate() == null) {
+            throw new IllegalArgumentException("La fecha del préstamo es obligatoria");
+        }
+        if (loanDTO.getStartTime() == null || loanDTO.getEndTime() == null) {
+            throw new IllegalArgumentException("Las horas de inicio y fin son obligatorias");
+        }
+        if (loanDTO.getStartTime().isAfter(loanDTO.getEndTime()) || 
+            loanDTO.getStartTime().equals(loanDTO.getEndTime())) {
+            throw new IllegalArgumentException("La hora de fin debe ser posterior a la de inicio");
+        }
 
-    // 2️⃣ Validar existencia y disponibilidad del aula con classroom-service
-    // Ahora usamos el método que consulta por ID y verifica el estado "AVAILABLE"
-    boolean aulaDisponible = classroomClient.isClassroomAvailable(loanDTO.getClassroomCode());
+        // 1️⃣ Validar que el usuario existe y está activo (solo si el servicio está disponible)
+        try {
+            if (!userService.isUserActiveByCode(loanDTO.getUserCode())) {
+                throw new LoanServiceException.UserNotActiveException(loanDTO.getUserCode());
+            }
+        } catch (Exception e) {
+            // Si hay error consultando usuarios, permitir pero logear
+            System.out.println("⚠️ Warning: No se pudo validar usuario " + loanDTO.getUserCode() + ": " + e.getMessage());
+        }
 
-    if (!aulaDisponible) {
-        throw new LoanServiceException.ClassroomNotAvailableException(
-            "The classroom with ID " + loanDTO.getClassroomCode() + " is not available."
-        );
+        // 2️⃣ Validar existencia y disponibilidad del aula con classroom-service
+        try {
+            boolean aulaDisponible = classroomClient.isClassroomAvailable(loanDTO.getClassroomCode());
+            if (!aulaDisponible) {
+                throw new LoanServiceException.ClassroomNotAvailableException(
+                    "El aula " + loanDTO.getClassroomCode() + " no está disponible."
+                );
+            }
+        } catch (LoanServiceException.ClassroomNotAvailableException e) {
+            throw e; // Re-lanzar excepciones de negocio
+        } catch (Exception e) {
+            // Si hay error de conectividad, permitir pero logear
+            System.out.println("⚠️ Warning: No se pudo validar aula " + loanDTO.getClassroomCode() + ": " + e.getMessage());
+        }
+
+        // 3️⃣ Verificar conflictos de horario entre préstamos en esta misma aula
+        try {
+            List<Loan> conflicts = loanRepository.findConflictingLoans(
+                loanDTO.getClassroomCode(),
+                loanDTO.getLoanDate(),
+                loanDTO.getStartTime(),
+                loanDTO.getEndTime()
+            );
+
+            if (!conflicts.isEmpty()) {
+                throw new LoanServiceException.TimeConflictException(
+                    "Ya existe un préstamo en el aula " + loanDTO.getClassroomCode() + 
+                    " que se solapa con el horario solicitado."
+                );
+            }
+        } catch (LoanServiceException.TimeConflictException e) {
+            throw e; // Re-lanzar excepciones de conflicto
+        } catch (Exception e) {
+            // Si hay error en la consulta, permitir pero logear
+            System.out.println("⚠️ Warning: No se pudo verificar conflictos: " + e.getMessage());
+        }
+
+        // 4️⃣ Crear y configurar el préstamo
+        Loan loan = convertToEntity(loanDTO);
+
+        // Si no tiene estado definido, se marca como "RESERVED" por defecto
+        loan.setStatus(loanDTO.getStatus() != null ? loanDTO.getStatus() : "RESERVED");
+
+        // Guardar préstamo
+        Loan savedLoan = loanRepository.save(loan);
+
+        return convertToDTO(savedLoan);
     }
-
-    // 3️⃣ Verificar conflictos de horario entre préstamos en esta misma aula
-   
-    //List<Loan> conflicts = loanRepository.findConflictingLoans(
-       // loanDTO.getClassroomCode(),
-     //   loanDTO.getLoanDate(),
-       // loanDTO.getStartTime(),
-       // loanDTO.getEndTime()
-   // );
-
-   // if (!conflicts.isEmpty()) {
-     //   throw new LoanServiceException.TimeConflictException(
-       //     "Classroom ID " + loanDTO.getClassroomCode() + " has time conflicts."
-      ////  );
-   // }
-
-    // 4️⃣ Crear y configurar el préstamo
-    Loan loan = convertToEntity(loanDTO);
-
-    // Si no tiene estado definido, se marca como "RESERVED" por defecto
-    loan.setStatus(loanDTO.getStatus() != null ? loanDTO.getStatus() : "RESERVED");
-
-    // Guardar préstamo
-    Loan savedLoan = loanRepository.save(loan);
-
-    // 🔹 (Opcional): Aquí podrías notificar al ClassroomService para cambiar el estado del aula a "OCCUPIED"
-    // classroomClient.updateClassroomStatus(loanDTO.getClassroomId(), "OCCUPIED");
-
-    return convertToDTO(savedLoan);
-}
 
 
     // Obtener todos los préstamos
