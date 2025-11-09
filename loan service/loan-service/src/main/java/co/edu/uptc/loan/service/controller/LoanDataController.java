@@ -43,7 +43,7 @@ public class LoanDataController {
     }
     
     @GetMapping("/by-classroom")
-    public ResponseEntity<List<LoanDTO>> getLoansByClassroom(@RequestParam String classroomCode) {
+    public ResponseEntity<List<LoanDTO>> getLoansByClassroom(@RequestParam Long classroomCode) {
         List<LoanDTO> loans = loanService.getLoansByClassroom(classroomCode);
         return ResponseEntity.ok(loans);
     }

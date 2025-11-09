@@ -37,8 +37,10 @@ public class ClassroomService {
                 .name(c.getName())
                 .capacity(c.getCapacity())
                 .location(c.getLocation())
+                .state(c.getState())
                 .build();
     }
+
 
     public ClassroomResponse save(ClassroomRequest dto) {
         Classroom classroom = Classroom.builder()
@@ -79,29 +81,4 @@ public class ClassroomService {
         classroomRepository.deleteById(id);
     }
 
-    /**
-     * Verifica si un aula existe y está disponible
-     * Por ahora, solo verifica existencia.
-     * TODO: En futuras versiones, consultar tabla de préstamos/reservas
-     */
-    public boolean isClassroomAvailable(String classroomName, String date, String startTime, String endTime) {
-        // Verificar que el aula existe
-        Optional<Classroom> classroom = classroomRepository.findByName(classroomName);
-        
-        if (classroom.isEmpty()) {
-            return false; // Aula no existe
-        }
-        
-        // TODO: Consultar préstamos activos en ese horario
-        // Por ahora, si existe el aula, se considera disponible
-        System.out.println("✅ Aula '" + classroomName + "' verificada - Disponible");
-        return true;
-    }
-
-    /**
-     * Verifica solo si el aula existe
-     */
-    public boolean classroomExists(String classroomName) {
-        return classroomRepository.findByName(classroomName).isPresent();
-    }
 }

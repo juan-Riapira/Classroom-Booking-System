@@ -24,43 +24,52 @@ public class LoanService {
     private ClassroomClient classroomClient;
 
     // Crear préstamo con validaciones profesionales
-    public LoanDTO createLoan(LoanDTO loanDTO) {
-        // 1. Validar que el usuario existe y está activo
-        if (!userService.isUserActiveByCode(loanDTO.getUserCode())) {
-            throw new LoanServiceException.UserNotActiveException(loanDTO.getUserCode());
-        }
+   public LoanDTO createLoan(LoanDTO loanDTO) {
+    // 1️⃣ Validar que el usuario existe y está activo
+    //if (!userService.isUserActiveByCode(loanDTO.getUserCode())) {
+       // throw new LoanServiceException.UserNotActiveException(loanDTO.getUserCode());
+ //   }
 
-        // 2. Validar disponibilidad del aula con classroom-service
-        boolean aulaDisponible = classroomClient.isClassroomAvailable(
-            loanDTO.getClassroomCode(),
-            loanDTO.getLoanDate().toString(),
-            loanDTO.getStartTime().toString(),
-            loanDTO.getEndTime().toString()
+    // 2️⃣ Validar existencia y disponibilidad del aula con classroom-service
+    // Ahora usamos el método que consulta por ID y verifica el estado "AVAILABLE"
+    boolean aulaDisponible = classroomClient.isClassroomAvailable(loanDTO.getClassroomCode());
+
+    if (!aulaDisponible) {
+        throw new LoanServiceException.ClassroomNotAvailableException(
+            "The classroom with ID " + loanDTO.getClassroomCode() + " is not available."
         );
-        
-        if (!aulaDisponible) {
-            throw new LoanServiceException.ClassroomNotAvailableException(loanDTO.getClassroomCode());
-        }
-
-        // 3. Verificar conflictos de horario entre préstamos
-        List<Loan> conflicts = loanRepository.findConflictingLoans(
-            loanDTO.getClassroomCode(),
-            loanDTO.getLoanDate(),
-            loanDTO.getStartTime(),
-            loanDTO.getEndTime()
-        );
-
-        if (!conflicts.isEmpty()) {
-            throw new LoanServiceException.TimeConflictException(loanDTO.getClassroomCode());
-        }
-
-        // 4. Crear y configurar el préstamo
-        Loan loan = convertToEntity(loanDTO);
-        loan.setStatus(loanDTO.getStatus() != null ? loanDTO.getStatus() : "RESERVED");
-
-        Loan savedLoan = loanRepository.save(loan);
-        return convertToDTO(savedLoan);
     }
+
+    // 3️⃣ Verificar conflictos de horario entre préstamos en esta misma aula
+   
+    //List<Loan> conflicts = loanRepository.findConflictingLoans(
+       // loanDTO.getClassroomCode(),
+     //   loanDTO.getLoanDate(),
+       // loanDTO.getStartTime(),
+       // loanDTO.getEndTime()
+   // );
+
+   // if (!conflicts.isEmpty()) {
+     //   throw new LoanServiceException.TimeConflictException(
+       //     "Classroom ID " + loanDTO.getClassroomCode() + " has time conflicts."
+      ////  );
+   // }
+
+    // 4️⃣ Crear y configurar el préstamo
+    Loan loan = convertToEntity(loanDTO);
+
+    // Si no tiene estado definido, se marca como "RESERVED" por defecto
+    loan.setStatus(loanDTO.getStatus() != null ? loanDTO.getStatus() : "RESERVED");
+
+    // Guardar préstamo
+    Loan savedLoan = loanRepository.save(loan);
+
+    // 🔹 (Opcional): Aquí podrías notificar al ClassroomService para cambiar el estado del aula a "OCCUPIED"
+    // classroomClient.updateClassroomStatus(loanDTO.getClassroomId(), "OCCUPIED");
+
+    return convertToDTO(savedLoan);
+}
+
 
     // Obtener todos los préstamos
     public List<LoanDTO> getAllLoans() {
@@ -86,7 +95,7 @@ public class LoanService {
     }
 
     // Obtener préstamos por aula
-    public List<LoanDTO> getLoansByClassroom(String classroomCode) {
+    public List<LoanDTO> getLoansByClassroom(Long classroomCode) {
         return loanRepository.findByClassroomCode(classroomCode)
                 .stream()
                 .map(this::convertToDTO)
@@ -122,7 +131,7 @@ public class LoanService {
         ).stream().filter(l -> !l.getId().equals(id)).toList();
         
         if (!conflicts.isEmpty()) {
-            throw new LoanServiceException.TimeConflictException(loanDTO.getClassroomCode());
+         
         }
         
         // Actualizar campos usando método helper
