@@ -56,6 +56,7 @@ public class ClassroomService {
                 .name(saved.getName())
                 .capacity(saved.getCapacity())
                 .location(saved.getLocation())
+                .state(saved.getState())
                 .build();
     }
 
