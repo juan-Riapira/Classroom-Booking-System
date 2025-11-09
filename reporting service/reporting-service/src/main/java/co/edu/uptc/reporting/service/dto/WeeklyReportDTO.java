@@ -2,41 +2,41 @@ package co.edu.uptc.reporting.service.dto;
 
 public class WeeklyReportDTO {
 
-    private String program; // nombre del programa (ej. Ingeniería de Sistemas)
-    private int week; // número de la semana (ej. 23)
-    private long count; // cantidad de préstamos en esa semana para el programa
+    private String programa; // nombre del programa (ej. Ingeniería de Sistemas)
+    private int semana; // número de la semana (ej. 23)
+    private long cantidad; // cantidad de préstamos en esa semana para el programa
 
     public WeeklyReportDTO() {
     }
 
     public WeeklyReportDTO(String program, int week, long count) {
-        this.program = program;
-        this.week = week;
-        this.count = count;
+        this.programa = program;
+        this.semana = week;
+        this.cantidad = count;
     }
 
-    public String getProgram() {
-        return program;
+    public String getPrograma() {
+        return programa;
     }
 
-    public void setProgram(String program) {
-        this.program = program;
+    public void setPrograma(String program) {
+        this.programa = program;
     }
 
-    public int getWeek() {
-        return week;
+    public int getSemana() {
+        return semana;
     }
 
-    public void setWeek(int week) {
-        this.week = week;
+    public void setSemana(int week) {
+        this.semana = week;
     }
 
-    public long getCount() {
-        return count;
+    public long getCantidad() {
+        return cantidad;
     }
 
-    public void setCount(long count) {
-        this.count = count;
+    public void setCantidad(long count) {
+        this.cantidad = count;
     }
 
 }

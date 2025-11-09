@@ -2,41 +2,41 @@ package co.edu.uptc.reporting.service.dto;
 
 public class MonthlyReportDTO {
 
-    private String program; // programa académico
-    private int month; // número del mes (1–12)
-    private long count; // cantidad de préstamos en ese mes para el programa
+    private String programa; // programa académico
+    private int mes; // número del mes (1–12)
+    private long cantidad; // cantidad de préstamos en ese mes para el programa
 
     public MonthlyReportDTO() {
     }
 
     public MonthlyReportDTO(String program, int month, long count) {
-        this.program = program;
-        this.month = month;
-        this.count = count;
+        this.programa = program;
+        this.mes = month;
+        this.cantidad = count;
     }
 
-    public String getProgram() {
-        return program;
+    public String getPrograma() {
+        return programa;
     }
 
-    public void setProgram(String program) {
-        this.program = program;
+    public void setPrograma(String program) {
+        this.programa = program;
     }
 
-    public int getMonth() {
-        return month;
+    public int getMes() {
+        return mes;
     }
 
-    public void setMonth(int month) {
-        this.month = month;
+    public void setMes(int month) {
+        this.mes = month;
     }
 
-    public long getCount() {
-        return count;
+    public long getCantidad() {
+        return cantidad;
     }
 
-    public void setCount(long count) {
-        this.count = count;
+    public void setCantidad(long count) {
+        this.cantidad = count;
     }
 
 }

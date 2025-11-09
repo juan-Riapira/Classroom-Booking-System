@@ -1,14 +1,27 @@
-# Imagen base con Java 17
-FROM eclipse-temurin:17-jdk
+# Etapa 1: construir la app con Maven
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 
-# Carpeta de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiamos el archivo JAR generado en tu PC (luego de compilar)
-COPY target/reporting-service-0.0.1-SNAPSHOT.jar reporting-service.jar
+# Copiar pom.xml y descargar dependencias (caché)
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
 
-# Exponemos el puerto que usa tu aplicación
+# Copiar el código fuente
+COPY src ./src
+
+# Construir el jar sin ejecutar tests
+RUN mvn clean package -DskipTests
+
+# Etapa 2: ejecutar la app con Java
+FROM eclipse-temurin:17-jdk
+
+WORKDIR /app
+
+# Copiar el jar desde la etapa anterior
+COPY --from=build /app/target/*.jar app.jar
+
+# Puerto donde correrá el microservicio
 EXPOSE 8083
 
-# Comando para ejecutar tu microservicio
-ENTRYPOINT ["java", "-jar", "reporting-service.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

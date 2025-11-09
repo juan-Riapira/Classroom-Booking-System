@@ -18,33 +18,34 @@ import co.edu.uptc.reporting.service.service.ReportingService;
 @RequestMapping("/api/reports")
 public class ReportingController {
 
-  private final ReportingService reportingService;
+    private final ReportingService reportingService;
 
-  public ReportingController(ReportingService reportingService) { this.reportingService = reportingService; }
+    public ReportingController(ReportingService reportingService) {
+        this.reportingService = reportingService;
+    }
 
-  @GetMapping("/peak-hours")
-  public ResponseEntity<List<HourFrequencyDTO>> peakHours(@RequestParam(defaultValue = "3") int top) {
-      return ResponseEntity.ok(reportingService.getPeakHours(top));
-  }
+    @GetMapping("/peak-hours")
+    public ResponseEntity<List<HourFrequencyDTO>> peakHours(@RequestParam(defaultValue = "3") int top) {
+        return ResponseEntity.ok(reportingService.getPeakHours(top));
+    }
 
-  @GetMapping("/low-hours")
-  public ResponseEntity<List<HourFrequencyDTO>> lowHours(@RequestParam(defaultValue = "3") int top) {
-      return ResponseEntity.ok(reportingService.getLowHours(top));
-  }
+    @GetMapping("/low-hours")
+    public ResponseEntity<List<HourFrequencyDTO>> lowHours(@RequestParam(defaultValue = "3") int top) {
+        return ResponseEntity.ok(reportingService.getLowHours(top));
+    }
 
-  @GetMapping("/weekly-by-program")
-  public ResponseEntity<List<WeeklyReportDTO>> weeklyByProgram() {
-      return ResponseEntity.ok(reportingService.getWeeklyByProgram());
-  }
+    @GetMapping("/weekly-by-program")
+    public ResponseEntity<List<WeeklyReportDTO>> weeklyByProgram() {
+        return ResponseEntity.ok(reportingService.getWeeklyByProgram());
+    }
 
-  @GetMapping("/monthly-by-program")
-  public ResponseEntity<List<MonthlyReportDTO>> monthlyByProgram() {
-      return ResponseEntity.ok(reportingService.getMonthlyByProgram());
-  }
+    @GetMapping("/monthly-by-program")
+    public ResponseEntity<List<MonthlyReportDTO>> monthlyByProgram() {
+        return ResponseEntity.ok(reportingService.getMonthlyByProgram());
+    }
 
-  @GetMapping("/classroom-frequency")
-  public ResponseEntity<List<ClassroomFrequencyDTO>> classroomFrequency() {
-      return ResponseEntity.ok(reportingService.getClassroomFrequency());
-  }
+    @GetMapping("/classroom-frequency")
+    public ResponseEntity<List<ClassroomFrequencyDTO>> classroomFrequency() {
+        return ResponseEntity.ok(reportingService.getClassroomFrequency());
+    }
 }
-

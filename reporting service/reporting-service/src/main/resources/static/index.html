@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reportes de Préstamos - DTIC</title>
+  <link rel="stylesheet" href="styles/styles.css" />
+  <link rel="stylesheet" href="styles/menu.css">
+</head>
+<body>
+
+  <header>Sistema de Reportes - DTIC</header>
+   <!-- MENÚ HAMBURGUESA MODERNO -->
+   <div class="menu-container">
+    <button id="menu-toggle" class="menu-button">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
+
+    <nav id="menu" class="menu">
+      <h2>Menú</h2>
+      <a href="#" onclick="loadSection('reportes')">Reportes</a>
+      <a href="#" onclick="loadSection('aulas')">Aulas</a>
+      <a href="#" onclick="loadSection('prestamos')">Préstamos</a>
+    </nav>
+  </div>
+
+  <main>
+    <h2>Reportes de Préstamo de Salas</h2>
+
+    <div class="buttons">
+      <button onclick="getPeakHours()">Horario con mayor frecuencia de préstamo</button>
+      <button onclick="getLowHours()">Horario con menor frecuencia de préstamo</button>
+      <button onclick="getWeeklyByProgram()">Reportes semanales por programa de los préstamos realizados</button>
+      <button onclick="getMonthlyByProgram()">Reportes mensuales por programa de los préstamos realizados</button>
+      <button onclick="getClassroomFrequency()">Frecuencia de préstamo de las salas</button>
+    </div>
+
+    <div id="reportResult">
+      <p class="loading">Selecciona un reporte para visualizar los resultados...</p>
+    </div>
+  </main>
+
+  <footer>© 2025 UPTC - Proyecto DTIC | Equipo de Ingeniería de Sistemas</footer>
+
+  <script src="js/reporting.js"></script>
+  <script src="js/menu.js"></script>
+</body>
+</html>
