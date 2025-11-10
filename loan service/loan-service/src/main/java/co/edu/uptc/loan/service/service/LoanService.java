@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,14 +25,18 @@ public class LoanService {
     private ClassroomClient classroomClient;
 
     // Crear préstamo con validaciones profesionales
-   public LoanDTO createLoan(LoanDTO loanDTO) {
-    // 1️⃣ Validar que el usuario existe y está activo
-    //if (!userService.isUserActiveByCode(loanDTO.getUserCode())) {
-       // throw new LoanServiceException.UserNotActiveException(loanDTO.getUserCode());
- //   }
 
-    // 2️⃣ Validar existencia y disponibilidad del aula con classroom-service
-    // Ahora usamos el método que consulta por ID y verifica el estado "AVAILABLE"
+    public List<Map<String, Object>> listAllClassrooms() {
+        return classroomClient.getAllClassrooms();
+    }
+
+  public LoanDTO createLoan(LoanDTO loanDTO) {
+    // 1️⃣ Validar que el usuario existe y está activo
+    if (!userService.isUserActiveByCode(loanDTO.getUserCode())) {
+        throw new LoanServiceException.UserNotActiveException(loanDTO.getUserCode());
+    }
+
+    // 2️⃣ Verificar que el aula existe y está disponible mediante Classroom-Service
     boolean aulaDisponible = classroomClient.isClassroomAvailable(loanDTO.getClassroomCode());
 
     if (!aulaDisponible) {
@@ -40,33 +45,36 @@ public class LoanService {
         );
     }
 
-    // 3️⃣ Verificar conflictos de horario entre préstamos en esta misma aula
-   
-    //List<Loan> conflicts = loanRepository.findConflictingLoans(
-       // loanDTO.getClassroomCode(),
-     //   loanDTO.getLoanDate(),
-       // loanDTO.getStartTime(),
-       // loanDTO.getEndTime()
-   // );
+    // 3️⃣ Validar conflictos de horario con otros préstamos
+    List<Loan> conflicts = loanRepository.findConflictingLoans(
+        loanDTO.getClassroomCode(),
+        loanDTO.getLoanDate(),
+        loanDTO.getStartTime(),
+        loanDTO.getEndTime()
+    );
 
-   // if (!conflicts.isEmpty()) {
-     //   throw new LoanServiceException.TimeConflictException(
-       //     "Classroom ID " + loanDTO.getClassroomCode() + " has time conflicts."
-      ////  );
-   // }
+    if (!conflicts.isEmpty()) {
+        throw new LoanServiceException.TimeConflictException(
+            "Classroom ID " + loanDTO.getClassroomCode() + " has time conflicts."
+        );
+    }
 
-    // 4️⃣ Crear y configurar el préstamo
+    // 4️⃣ Crear el préstamo
     Loan loan = convertToEntity(loanDTO);
-
-    // Si no tiene estado definido, se marca como "RESERVED" por defecto
     loan.setStatus(loanDTO.getStatus() != null ? loanDTO.getStatus() : "RESERVED");
 
-    // Guardar préstamo
     Loan savedLoan = loanRepository.save(loan);
 
-    // 🔹 (Opcional): Aquí podrías notificar al ClassroomService para cambiar el estado del aula a "OCCUPIED"
-    // classroomClient.updateClassroomStatus(loanDTO.getClassroomId(), "OCCUPIED");
+    // 5️⃣ Actualizar estado del aula a "OCCUPIED" en Classroom-Service
+    boolean actualizado = classroomClient.updateClassroomStatus(loanDTO.getClassroomCode(), "OCCUPIED");
 
+    if (!actualizado) {
+        System.out.println("⚠️ No se pudo actualizar el estado del aula en Classroom-Service.");
+    } else {
+        System.out.println("✅ Aula marcada como OCCUPIED correctamente.");
+    }
+
+    // 6️⃣ Retornar DTO del préstamo creado
     return convertToDTO(savedLoan);
 }
 
@@ -143,9 +151,15 @@ public class LoanService {
     
     // Eliminar préstamo
     public void deleteLoan(Long id) {
+        Loan loan = loanRepository.findById(id)
+            .orElseThrow();
+
         if (!loanRepository.existsById(id)) {
             throw new LoanServiceException.LoanNotFoundException(id);
+            
         }
+         classroomClient.releaseClassroom(loan.getClassroomCode());
+
         loanRepository.deleteById(id);
     }
     
