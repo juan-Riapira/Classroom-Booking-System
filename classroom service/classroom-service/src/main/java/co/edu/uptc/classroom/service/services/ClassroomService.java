@@ -24,6 +24,7 @@ public class ClassroomService {
                         .name(c.getName())
                         .capacity(c.getCapacity())
                         .location(c.getLocation())
+                        .state(c.getState())
                         .build())
                 .toList();
     }
@@ -66,6 +67,7 @@ public class ClassroomService {
                     c.setName(dto.getName());
                     c.setCapacity(dto.getCapacity());
                     c.setLocation(dto.getLocation());
+                    c.setState(dto.getState());
                     return classroomRepository.save(c);
                 })
                 .orElseThrow(() -> new RuntimeException("Classroom not found"));
@@ -75,11 +77,30 @@ public class ClassroomService {
                 .name(updated.getName())
                 .capacity(updated.getCapacity())
                 .location(updated.getLocation())
+                .state(updated.getState())
                 .build();
     }
 
     public void delete(Long id) {
         classroomRepository.deleteById(id);
     }
+
+
+        public ClassroomResponse updateState(Long id, String newState) {
+        Classroom classroom = classroomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Classroom not found"));
+
+        classroom.setState(newState);
+        Classroom updated = classroomRepository.save(classroom);
+
+        return ClassroomResponse.builder()
+                .id(updated.getId())
+                .name(updated.getName())
+                .capacity(updated.getCapacity())
+                .location(updated.getLocation())
+                .state(updated.getState())
+                .build();
+        }
+
 
 }

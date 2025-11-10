@@ -1,7 +1,7 @@
 package co.edu.uptc.classroom.service.controller;
 
 import java.util.List;
-
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.http.ResponseEntity;
 
 import co.edu.uptc.classroom.service.dto.ClassroomRequest;
 import co.edu.uptc.classroom.service.dto.ClassroomResponse;
@@ -50,6 +50,16 @@ public class ClassroomController {
     public void delete(@PathVariable Long id) {
         classroomService.delete(id);
     }
+
+   @PutMapping("/{id}/status")
+    public ResponseEntity<ClassroomResponse> updateState(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String newState = body.get("state");
+        ClassroomResponse updated = classroomService.updateState(id, newState);
+        return ResponseEntity.ok(updated);
+    }
+
+
+
    
 }
     

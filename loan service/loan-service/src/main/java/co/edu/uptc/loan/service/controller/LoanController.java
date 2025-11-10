@@ -2,12 +2,15 @@ package co.edu.uptc.loan.service.controller;
 
 import co.edu.uptc.loan.service.dto.LoanDTO;
 import co.edu.uptc.loan.service.service.LoanService;
+
+//import org.hibernate.mapping.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/loans")
@@ -43,6 +46,12 @@ public class LoanController {
     public ResponseEntity<List<LoanDTO>> getLoansByUser(@PathVariable String userCode) {
         List<LoanDTO> loans = loanService.getLoansByUser(userCode);
         return ResponseEntity.ok(loans);
+    }
+
+    @GetMapping("/classrooms")
+    public ResponseEntity<List<Map<String, Object>>> getAllClassrooms() {
+        List<Map<String, Object>> classrooms = loanService.listAllClassrooms();
+        return ResponseEntity.ok(classrooms);
     }
 
     // GET /api/loans/classroom/{classroomCode} - Préstamos por aula
