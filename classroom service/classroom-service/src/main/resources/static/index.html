@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Classroom Management</title>
+  <title>Gestion de Aulas - DTIC</title>
   <link rel="stylesheet" href="styles/classroom.css" />
   <link rel="stylesheet" href="styles/menu.css">
 </head>
 <body>
   
 
-    <header> Classroom Management System</header>
+   <header> Sistema de Aulas - DTIC </header>
    <!-- MENÚ HAMBURGUESA MODERNO -->
    <div class="menu-container">
     <button id="menu-toggle" class="menu-button">
@@ -35,57 +35,56 @@
       <input type="hidden" id="classroomId">
 
       <div class="form-group">
-        <label for="name">Name:</label>
+        <label for="name">Nombre:</label>
         <input type="text" id="name" required>
       </div>
 
       <div class="form-group">
-        <label for="capacity">Capacity:</label>
+        <label for="capacity">Capacidad :</label>
         <input type="number" id="capacity" required min="1">
       </div>
 
       <div class="form-group">
-        <label for="location">Location:</label>
+        <label for="location">Locación:</label>
         <input type="text" id="location" required>
       </div>
 
       <div class="form-group">
-        <label for="state">State:</label>
+        <label for="state">Estado:</label>
         <select id="state" required>
-          <option value="AVAILABLE">AVAILABLE</option>
-          <option value="IN_USE">IN USE</option>
-          <option value="MAINTENANCE">MAINTENANCE</option>
+          <option value="AVAILABLE">DISPONIBLE</option>
+          <option value="IN_USE">EN USO</option>
+          <option value="MAINTENANCE">MANTENIMIENTO</option>
         </select>
       </div>
 
-      <button type="submit" id="saveBtn">Add Classroom</button>
+      <button type="submit" id="saveBtn">Crear Aula</button>
     </form>
 
     <!-- Tabla de aulas -->
     <section id="tableSection">
-      <h3>Classroom List</h3>
+      <h3>Aulas</h3>
       <table id="classroomTable">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Capacity</th>
-            <th>Location</th>
-            <th>State</th>
-            <th>Actions</th>
+            <th>Identificación</th>
+            <th>Nombre</th>
+            <th>Capacidad</th>
+            <th>Locación</th>
+            <th>Estado</th>
+            <th>Acción</th>
           </tr>
         </thead>
         <tbody id="classroomBody">
-          <tr><td colspan="6" class="loading">Loading classrooms...</td></tr>
+          <tr><td colspan="6" class="loading">Cargando aulas...</td></tr>
         </tbody>
       </table>
     </section>
   </main>
 
-  <footer>
-    © 2025 Classroom Booking System — UPTC
-  </footer>
+  <footer>© 2025 UPTC - Proyecto DTIC | Equipo de Ingeniería de Sistemas</footer>
 
   <script src="js/classroom.js"></script>
+  <script src="js/menu.js"></script>
 </body>
 </html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Préstamos de Aulas - DTIC</title>
+  <link rel="stylesheet" href="styles/loan.css" />
+  <link rel="stylesheet" href="styles/menu.css">
+</head>
+<body>
+
+  <header>Sistema de Préstamos - DTIC</header>
+  
+  <!-- MENÚ HAMBURGUESA MODERNO -->
+  <div class="menu-container">
+    <button id="menu-toggle" class="menu-button">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
+
+    <nav id="menu" class="menu">
+      <h2>Menú</h2>
+      <a href="#" onclick="loadSection('reportes')">Reportes</a>
+      <a href="#" onclick="loadSection('aulas')">Aulas</a>
+      <a href="#" onclick="loadSection('prestamos')">Préstamos</a>
+    </nav>
+  </div>
+
+  <main>
+    <h2>Gestión de Préstamos de Aulas</h2>
+
+    <!-- Formulario de creación/edición -->
+    <form id="loanForm">
+      <input type="hidden" id="loanId">
+
+      <div class="form-group">
+        <label for="userCode">Código de Usuario:</label>
+        <input type="text" id="userCode" required placeholder="Ingresa el código del usuario">
+      </div>
+
+      <div class="form-group">
+        <label for="classroomCode">Aula:</label>
+        <select id="classroomCode" required>
+          <option value="">Selecciona un aula...</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="loanDate">Fecha de Préstamo:</label>
+        <input type="date" id="loanDate" required>
+      </div>
+
+      <div class="form-group">
+        <label for="startTime">Hora de Inicio:</label>
+        <input type="time" id="startTime" required>
+      </div>
+
+      <div class="form-group">
+        <label for="endTime">Hora de Fin:</label>
+        <input type="time" id="endTime" required>
+      </div>
+
+      <div class="form-group full-width">
+        <label for="purpose">Propósito:</label>
+        <textarea id="purpose" rows="3" required placeholder="Describe el propósito del préstamo"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="status">Estado:</label>
+        <select id="status" required>
+          <option value="RESERVED">RESERVADO</option>
+          <option value="ACTIVE">ACTIVO</option>
+          <option value="CANCELLED">CANCELADO</option>
+        </select>
+      </div>
+
+      <button type="submit" id="saveBtn" class="btn-primary">Agregar Préstamo</button>
+      <button type="button" id="cancelBtn" class="btn-secondary" onclick="resetForm()">Cancelar</button>
+    </form>
+
+    <!-- Tabla de préstamos -->
+    <section id="tableSection">
+      <h3>Lista de Préstamos</h3>
+      <div class="filter-section">
+        <label for="statusFilter">Filtrar por estado:</label>
+        <select id="statusFilter" onchange="filterByStatus()">
+          <option value="">Todos</option>
+          <option value="RESERVED">Reservado</option>
+          <option value="ACTIVE">Activo</option>
+          <option value="CANCELLED">Cancelado</option>
+        </select>
+      </div>
+      
+      <table id="loanTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Código Usuario</th>
+            <th>Aula</th>
+            <th>Fecha</th>
+            <th>Hora Inicio</th>
+            <th>Hora Fin</th>
+            <th>Propósito</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="loanBody">
+          <tr><td colspan="9" class="loading">Cargando préstamos...</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>© 2025 UPTC - Proyecto DTIC | Equipo de Ingeniería de Sistemas</footer>
+
+  <script src="js/menu.js"></script>
+  <script src="js/loan.js"></script>
+</body>
+</html>
