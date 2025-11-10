@@ -29,11 +29,11 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
   
       case 'aulas':
-        window.location.href = "http://localhost:8082"; // Microservicio Classroom
+        window.location.href = "http://localhost:8081"; // Microservicio Classroom (CORREGIDO)
         break;
   
       case 'prestamos':
-        window.location.href = "http://localhost:8081"; // Microservicio Loan
+        window.location.href = "http://localhost:8082"; // Microservicio Loan (CORREGIDO) 
         break;
   
       default:
