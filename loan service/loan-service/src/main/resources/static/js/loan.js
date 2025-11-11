@@ -1,8 +1,7 @@
 // ===================================
-// 🔧 CONFIGURACIÓN DE APIs
+// 🔧 CONFIGURACIÓN DE API (solo loan-service)
 // ===================================
 const LOAN_API_URL = "http://localhost:8082/api/loans";
-const CLASSROOM_API_URL = "http://localhost:8081/api/classrooms";
 
 // ===================================
 // 📌 ELEMENTOS DEL DOM
@@ -11,545 +10,344 @@ const loanForm = document.getElementById("loanForm");
 const loanBody = document.getElementById("loanBody");
 const saveBtn = document.getElementById("saveBtn");
 const classroomSelect = document.getElementById("classroomCode");
+const statusFilter = document.getElementById("statusFilter");
 let editingId = null;
 
 // ===================================
 // 🚀 INICIALIZACIÓN
 // ===================================
 document.addEventListener("DOMContentLoaded", () => {
-  loadClassrooms();
-  loadLoans();
   setMinDate();
+  loadClassrooms(); // usa /api/loans/classrooms (expuesto por tu controller)
+  loadLoans();
 });
 
 // ===================================
-// � ESTABLECER FECHA MÍNIMA (HOY)
+// 📅 Establecer fecha mínima (hoy)
 // ===================================
 function setMinDate() {
   const today = new Date().toISOString().split('T')[0];
-  document.getElementById("loanDate").setAttribute('min', today);
+  const loanDateEl = document.getElementById("loanDate");
+  if (loanDateEl) loanDateEl.setAttribute('min', today);
 }
 
 // ===================================
-// 🏫 CARGAR AULAS DISPONIBLES DESDE CLASSROOM SERVICE
+// 🏫 Cargar aulas desde endpoint expuesto por loan-service: /api/loans/classrooms
 // ===================================
 async function loadClassrooms() {
+  if (!classroomSelect) return;
+  classroomSelect.innerHTML = '<option value="">Cargando aulas...</option>';
+
   try {
-    console.log("🔄 Cargando aulas desde Classroom Service...");
-    const response = await fetch(CLASSROOM_API_URL);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const classrooms = await response.json();
-    console.log("✅ Aulas cargadas:", classrooms);
-    
-    // Limpiar y llenar el select
+    const res = await fetch(`${LOAN_API_URL}/classrooms`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
     classroomSelect.innerHTML = '<option value="">Selecciona un aula...</option>';
-    
-    classrooms.forEach(classroom => {
-      const option = document.createElement("option");
-      option.value = classroom.id;
-      option.textContent = `${classroom.name} - ${classroom.location} (Capacity: ${classroom.capacity})`;
-      
-      // Deshabilitar aulas no disponibles
-      if (classroom.state !== "AVAILABLE") {
-        option.disabled = true;
-        option.textContent += ` - ${classroom.state}`;
-      }
-      
-      classroomSelect.appendChild(option);
+
+    if (!Array.isArray(data) || data.length === 0) {
+      classroomSelect.innerHTML += '<option value="" disabled>No hay aulas disponibles</option>';
+      return;
+    }
+
+    data.forEach(c => {
+      // Se asume que el classroom tiene campos: id, name, location, capacity, state
+      const opt = document.createElement('option');
+      opt.value = c.id ?? c.code ?? '';
+      opt.textContent = `${c.name ?? c.id} - ${c.location ?? ''} (${c.capacity ?? 'N/A'})${c.state ? ' - ' + c.state : ''}`;
+      if (c.state && c.state !== 'AVAILABLE') opt.disabled = true;
+      classroomSelect.appendChild(opt);
     });
-    
-    console.log("✅ Select de aulas poblado correctamente");
-  } catch (error) {
-    console.error("❌ Error cargando aulas:", error);
+  } catch (err) {
+    console.error("Error cargando aulas:", err);
     classroomSelect.innerHTML = '<option value="">Error cargando aulas</option>';
-    alert("⚠️ No se pudieron cargar las aulas. Verifica que el Classroom Service esté funcionando.");
   }
 }
 
 // ===================================
-// 🔍 FUNCIONES DE DIAGNÓSTICO
+// 📄 Cargar todos los préstamos (GET /api/loans)
 // ===================================
-async function showDiagnostic() {
-  const panel = document.getElementById('diagnosticPanel');
-  const content = document.getElementById('diagnosticContent');
-  
-  panel.style.display = 'block';
-  content.textContent = 'Running diagnostic tests...\n\n';
-  
-  let results = '';
-  
+async function loadLoans() {
   try {
-    // Test 1: Verificar URLs configuradas
-    results += '1. CONFIGURACIÓN DE URLs:\n';
-    results += `   - Classroom Service: ${CLASSROOM_API_URL}\n`;
-    results += `   - Loan Service: ${LOAN_API_URL}\n\n`;
-    
-    // Test 2: Verificar conectividad a Classroom Service
-    results += '2. CONECTIVIDAD CLASSROOM SERVICE:\n';
-    content.textContent = results;
-    
-    try {
-      const startTime = Date.now();
-      const response = await fetch(CLASSROOM_API_URL, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      });
-      const endTime = Date.now();
-      
-      results += `   ✅ Status: ${response.status} ${response.statusText}\n`;
-      results += `   ✅ Response time: ${endTime - startTime}ms\n`;
-      results += `   ✅ Headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}\n`;
-      
-      if (response.ok) {
-        const data = await response.json();
-        results += `   ✅ Data type: ${Array.isArray(data) ? 'Array' : typeof data}\n`;
-        results += `   ✅ Data length: ${Array.isArray(data) ? data.length : 'N/A'}\n`;
-        
-        if (Array.isArray(data) && data.length > 0) {
-          results += `   ✅ First item: ${JSON.stringify(data[0], null, 2)}\n`;
-        } else {
-          results += `   ⚠️ No data received or empty array\n`;
-        }
-      } else {
-        const errorText = await response.text();
-        results += `   ❌ Error response: ${errorText}\n`;
-      }
-    } catch (error) {
-      results += `   ❌ Connection failed: ${error.message}\n`;
-      results += `   ❌ Error type: ${error.name}\n`;
-    }
-    
-    results += '\n';
-    
-    // Test 3: Verificar DOM elements
-    results += '3. ELEMENTOS DOM:\n';
-    const elements = {
-      'classroomSelect': document.getElementById('classroomCode'),
-      'loanForm': document.getElementById('loanForm'),
-      'reloadBtn': document.getElementById('reloadClassroomsBtn')
-    };
-    
-    for (const [name, element] of Object.entries(elements)) {
-      if (element) {
-        results += `   ✅ ${name}: Found\n`;
-        if (name === 'classroomSelect') {
-          results += `      - Options count: ${element.options.length}\n`;
-          results += `      - Current value: "${element.value}"\n`;
-        }
-      } else {
-        results += `   ❌ ${name}: NOT FOUND\n`;
-      }
-    }
-    
-    results += '\n';
-    
-    // Test 4: Verificar si Docker está corriendo
-    results += '4. RECOMENDACIONES:\n';
-    results += '   • Verificar que Docker containers están corriendo:\n';
-    results += '     docker-compose ps\n';
-    results += '   • Verificar logs del Classroom Service:\n';
-    results += '     docker-compose logs classroom-service\n';
-    results += '   • Probar endpoint manualmente:\n';
-    results += '     curl http://localhost:8081/api/classrooms\n';
-    results += '   • Verificar que puerto 8081 esté accesible desde browser\n';
-    
-  } catch (error) {
-    results += `❌ Diagnostic failed: ${error.message}\n`;
-  }
-  
-  content.textContent = results;
-}
-
-function hideDiagnostic() {
-  document.getElementById('diagnosticPanel').style.display = 'none';
-}
-
-// ===================================
-// �📅 ESTABLECER FECHA MÍNIMA (HOY)
-// ===================================
-function setMinDate() {
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById("loanDate").setAttribute('min', today);
-}
-
-// ===================================
-// 🏫 CARGAR AULAS DISPONIBLES DESDE CLASSROOM SERVICE
-// ===================================
-async function loadClassrooms() {
-  try {
-    console.log("🔄 Cargando aulas desde Classroom Service...");
-    console.log("📡 URL del Classroom Service:", CLASSROOM_API_URL);
-    
-    // Verificar que el select existe
-    if (!classroomSelect) {
-      console.error("❌ No se encontró el elemento select con ID 'classroomCode'");
-      return;
-    }
-    
-    // Mostrar indicador de carga
-    classroomSelect.innerHTML = '<option value="">Loading classrooms...</option>';
-    
-    const response = await fetch(CLASSROOM_API_URL, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    console.log("📊 Response status:", response.status);
-    console.log("📊 Response headers:", Object.fromEntries(response.headers.entries()));
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-    }
-    
-    const classrooms = await response.json();
-    console.log("✅ Aulas cargadas:", classrooms);
-    console.log("📊 Número de aulas:", classrooms.length);
-    
-    // Verificar que classrooms es un array
-    if (!Array.isArray(classrooms)) {
-      throw new Error("La respuesta no es un array válido: " + typeof classrooms);
-    }
-    
-    // Limpiar y llenar el select
-    classroomSelect.innerHTML = '<option value="">Select a classroom...</option>';
-    
-    if (classrooms.length === 0) {
-      classroomSelect.innerHTML += '<option value="" disabled>No classrooms available</option>';
-      console.warn("⚠️ No hay aulas disponibles en la respuesta");
-      return;
-    }
-    
-    classrooms.forEach((classroom, index) => {
-      console.log(`🏫 Procesando aula ${index + 1}:`, classroom);
-      
-      const option = document.createElement("option");
-      option.value = classroom.id;
-      option.textContent = `${classroom.name} - ${classroom.location} (Capacity: ${classroom.capacity})`;
-      
-      // Deshabilitar aulas no disponibles
-      if (classroom.state !== "AVAILABLE") {
-        option.disabled = true;
-        option.textContent += ` - ${classroom.state}`;
-        console.log(`⚠️ Aula ${classroom.name} no disponible - Estado: ${classroom.state}`);
-      } else {
-        console.log(`✅ Aula ${classroom.name} disponible`);
-      }
-      
-      classroomSelect.appendChild(option);
-    });
-    
-    console.log("✅ Select de aulas poblado correctamente con", classrooms.length, "opciones");
-  } catch (error) {
-    console.error("❌ Error detallado cargando aulas:", error);
-    console.error("❌ Error stack:", error.stack);
-    classroomSelect.innerHTML = '<option value="">Error loading classrooms - Check console</option>';
-    
-    // Mostrar error más específico al usuario
-    let errorMessage = "⚠️ Could not load classrooms.\n\n";
-    
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      errorMessage += "• Classroom Service might not be running\n";
-      errorMessage += "• Check if http://localhost:8081 is accessible\n";
-      errorMessage += "• Verify Docker containers are up";
-    } else if (error.message.includes('CORS')) {
-      errorMessage += "• CORS error - Check @CrossOrigin annotation\n";
-      errorMessage += "• Verify ClassroomController has CORS enabled";
-    } else if (error.message.includes('404')) {
-      errorMessage += "• Endpoint not found\n";
-      errorMessage += "• Verify /api/classrooms endpoint exists";
-    } else {
-      errorMessage += "• " + error.message;
-    }
-    
-    alert(errorMessage);
+    showTableLoading();
+    const res = await fetch(LOAN_API_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const loans = await res.json();
+    renderLoansTable(loans);
+  } catch (err) {
+    console.error("Error loading loans:", err);
+    loanBody.innerHTML = '<tr><td colspan="9" class="error">Error loading loans</td></tr>';
   }
 }
 
+function showTableLoading() {
+  loanBody.innerHTML = '<tr><td colspan="9" class="loading">Cargando préstamos...</td></tr>';
+}
+
+function renderLoansTable(loans) {
+  loanBody.innerHTML = "";
+  if (!Array.isArray(loans) || loans.length === 0) {
+    loanBody.innerHTML = '<tr><td colspan="9" class="no-data">No se encontraron préstamos</td></tr>';
+    return;
+  }
+
+  loans.forEach(loan => {
+    const tr = document.createElement("tr");
+    const statusClass = loan.status ? loan.status.toLowerCase() : 'unknown';
+    tr.className = `status-${statusClass}`;
+
+    tr.innerHTML = `
+      <td>${loan.id ?? ''}</td>
+      <td>${loan.nameResponsible ?? ''}</td>
+      <td>${loan.userType ?? ''}</td>
+      <td>${loan.academicProgram ?? ''}</td>
+      <td>${loan.classroomCode ?? ''}</td>
+      <td>${formatDate(loan.loanDate)}</td>
+      <td>${loan.startTime ?? ''}</td>
+      <td>${loan.endTime ?? ''}</td>
+      <td class="purpose-cell">${escapeHtml(loan.purpose ?? '')}</td>
+      <td><span class="status-badge ${statusClass}">${loan.status ?? ''}</span></td>
+      <td class="action-buttons">
+        <button class="btn-edit" onclick="editLoan(${loan.id})" title="Editar">✏️</button>
+        <button class="btn-delete" onclick="deleteLoan(${loan.id})" title="Eliminar">🗑️</button>
+        ${getStatusActions(loan)}
+      </td>
+    `;
+    loanBody.appendChild(tr);
+  });
+}
+
+// Evitar inyección simple en propósito
+function escapeHtml(str) {
+  return str.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+}
+
 // ===================================
-// 📋 ENVIAR FORMULARIO (CREATE/UPDATE)
+// 🎯 Botones por estado (usa endpoints específicos)
+ // - activate -> PATCH /{id}/activate
+ // - cancel   -> PATCH /{id}/cancel
+// ===================================
+function getStatusActions(loan) {
+  let buttons = '';
+  if (loan.status === 'RESERVED') {
+    buttons += `<button class="btn-activate" onclick="activateLoan(${loan.id})" title="Activar">✔️ Activate</button>`;
+  }
+  if (loan.status !== 'CANCELLED') {
+    buttons += `<button class="btn-cancel" onclick="cancelLoan(${loan.id})" title="Cancelar">❌ Cancel</button>`;
+  }
+  return buttons;
+}
+
+// ===================================
+// 📝 Crear o actualizar préstamo (POST / PUT)
 // ===================================
 loanForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const loanData = {
-    userCode: document.getElementById("userCode").value,
-    classroomCode: parseInt(document.getElementById("classroomCode").value),
+    nameResponsible: document.getElementById("nameResponsible").value.trim(),
+    userType: document.getElementById("userType").value,
+    academicProgram: document.getElementById("academicProgram").value,
+    classroomCode: parseInt(document.getElementById("classroomCode").value) || null,
     loanDate: document.getElementById("loanDate").value,
     startTime: document.getElementById("startTime").value,
     endTime: document.getElementById("endTime").value,
-    purpose: document.getElementById("purpose").value,
+    purpose: document.getElementById("purpose").value.trim(),
     status: document.getElementById("status").value
   };
 
-  // Validación: hora de fin debe ser mayor que hora de inicio
-  if (loanData.startTime >= loanData.endTime) {
-    alert("⚠️ End time must be after start time!");
-    return;
-  }
+  // Validaciones básicas
+  if (!loanData.nameResponsible) return alert("Ingresa el nombre del responsable");
+  if (!loanData.userType) return alert("Selecciona el tipo de usuario");
+  if (!loanData.academicProgram) return alert("Selecciona el programa académico");
+  if (!loanData.classroomCode) return alert("Selecciona un aula");
+  if (!loanData.loanDate) return alert("Selecciona una fecha");
+  if (!loanData.startTime || !loanData.endTime) return alert("Selecciona hora inicio y fin");
+  if (loanData.startTime >= loanData.endTime) return alert("La hora de fin debe ser posterior a la hora de inicio");
 
   try {
-    let response;
-    
+    let res;
     if (editingId) {
-      // Actualizar préstamo existente
-      response = await fetch(`${LOAN_API_URL}/${editingId}`, {
+      res = await fetch(`${LOAN_API_URL}/${editingId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loanData)
       });
     } else {
-      // Crear nuevo préstamo
-      response = await fetch(LOAN_API_URL, {
+      res = await fetch(LOAN_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loanData)
       });
     }
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Error saving loan");
+    if (!res.ok) {
+      // intentar leer cuerpo con mensaje de error
+      let errText = `HTTP ${res.status}`;
+      try {
+        const json = await res.json();
+        errText = json.message || JSON.stringify(json);
+      } catch (_) {
+        const text = await res.text().catch(() => null);
+        if (text) errText = text;
+      }
+      throw new Error(errText);
     }
 
-    const result = await response.json();
-    console.log("✅ Loan saved:", result);
-    
-    alert(editingId ? "✅ Loan updated successfully!" : "✅ Loan created successfully!");
+    const saved = await res.json();
+    alert(editingId ? "✅ Préstamo actualizado" : "✅ Préstamo creado");
     resetForm();
     loadLoans();
-    
-  } catch (error) {
-    console.error("❌ Error saving loan:", error);
-    alert("❌ Error: " + error.message);
+  } catch (err) {
+    console.error("Error saving loan:", err);
+    alert("Error saving loan: " + err.message);
   }
 });
 
 // ===================================
-// 📄 CARGAR TODOS LOS PRÉSTAMOS
-// ===================================
-async function loadLoans() {
-  try {
-    const response = await fetch(LOAN_API_URL);
-    const loans = await response.json();
-
-    loanBody.innerHTML = "";
-
-    if (loans.length === 0) {
-      loanBody.innerHTML = '<tr><td colspan="9" class="no-data">No loans found</td></tr>';
-      return;
-    }
-
-    loans.forEach(loan => {
-      const tr = document.createElement("tr");
-      tr.className = `status-${loan.status.toLowerCase()}`;
-      
-      tr.innerHTML = `
-        <td>${loan.id}</td>
-        <td>${loan.userCode}</td>
-        <td>${loan.classroomCode}</td>
-        <td>${formatDate(loan.loanDate)}</td>
-        <td>${loan.startTime}</td>
-        <td>${loan.endTime}</td>
-        <td class="purpose-cell">${loan.purpose}</td>
-        <td><span class="status-badge ${loan.status.toLowerCase()}">${loan.status}</span></td>
-        <td class="action-buttons">
-          <button class="btn-edit" onclick="editLoan(${loan.id})" title="Edit">✏️</button>
-          <button class="btn-delete" onclick="deleteLoan(${loan.id})" title="Delete">🗑️</button>
-          ${getStatusActions(loan)}
-        </td>
-      `;
-      loanBody.appendChild(tr);
-    });
-  } catch (error) {
-    console.error("❌ Error loading loans:", error);
-    loanBody.innerHTML = '<tr><td colspan="9" class="error">Error loading loans</td></tr>';
-  }
-}
-
-// ===================================
-// 🎯 BOTONES DE ACCIÓN POR ESTADO
-// ===================================
-function getStatusActions(loan) {
-  let buttons = '';
-  
-  if (loan.status === 'RESERVED') {
-    buttons += `<button class="btn-activate" onclick="activateLoan(${loan.id})" title="Activate">✔️ Activate</button>`;
-  }
-  
-  if (loan.status !== 'CANCELLED') {
-    buttons += `<button class="btn-cancel" onclick="cancelLoan(${loan.id})" title="Cancel">❌ Cancel</button>`;
-  }
-  
-  return buttons;
-}
-
-// ===================================
-// ✏️ EDITAR PRÉSTAMO
+// ✏️ Editar préstamo (GET /{id})
 // ===================================
 async function editLoan(id) {
   try {
-    const response = await fetch(`${LOAN_API_URL}/${id}`);
-    const loan = await response.json();
+    const res = await fetch(`${LOAN_API_URL}/${id}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const loan = await res.json();
 
-    document.getElementById("userCode").value = loan.userCode;
-    document.getElementById("classroomCode").value = loan.classroomCode;
-    document.getElementById("loanDate").value = loan.loanDate;
-    document.getElementById("startTime").value = loan.startTime;
-    document.getElementById("endTime").value = loan.endTime;
-    document.getElementById("purpose").value = loan.purpose;
-    document.getElementById("status").value = loan.status;
+    document.getElementById("nameResponsible").value = loan.nameResponsible ?? '';
+    document.getElementById("userType").value = loan.userType ?? '';
+    document.getElementById("academicProgram").value = loan.academicProgram ?? '';
+    document.getElementById("classroomCode").value = loan.classroomCode ?? '';
+    document.getElementById("loanDate").value = loan.loanDate ?? '';
+    document.getElementById("startTime").value = loan.startTime ?? '';
+    document.getElementById("endTime").value = loan.endTime ?? '';
+    document.getElementById("purpose").value = loan.purpose ?? '';
+    document.getElementById("status").value = loan.status ?? 'RESERVED';
 
     editingId = id;
-    saveBtn.textContent = "Update Loan";
-    
-    // Scroll al formulario
-    loanForm.scrollIntoView({ behavior: 'smooth' });
-  } catch (error) {
-    console.error("❌ Error loading loan:", error);
+    saveBtn.textContent = "Actualizar préstamo";
+    loanForm.scrollIntoView({ behavior: "smooth" });
+  } catch (err) {
+    console.error("Error loading loan:", err);
     alert("Error loading loan data");
   }
 }
 
 // ===================================
-// 🗑️ ELIMINAR PRÉSTAMO
+// 🗑️ Eliminar préstamo (DELETE /{id})
 // ===================================
 async function deleteLoan(id) {
-  if (!confirm("Are you sure you want to delete this loan?")) return;
-
+  if (!confirm("¿Seguro que deseas eliminar este préstamo?")) return;
   try {
-    const response = await fetch(`${LOAN_API_URL}/${id}`, { method: "DELETE" });
-    
-    if (response.ok) {
-      alert("✅ Loan deleted successfully!");
+    const res = await fetch(`${LOAN_API_URL}/${id}`, { method: "DELETE" });
+    if (res.status === 204 || res.ok) {
+      alert("✅ Préstamo eliminado");
       loadLoans();
     } else {
-      throw new Error("Failed to delete loan");
+      let txt = await res.text().catch(()=>null);
+      throw new Error(txt || `HTTP ${res.status}`);
     }
-  } catch (error) {
-    console.error("❌ Error deleting loan:", error);
-    alert("Error deleting loan");
+  } catch (err) {
+    console.error("Error deleting loan:", err);
+    alert("Error deleting loan: " + err.message);
   }
 }
 
 // ===================================
-// ✅ ACTIVAR PRÉSTAMO
+// ✅ Activar préstamo (PATCH /{id}/activate)
 // ===================================
 async function activateLoan(id) {
   try {
-    const response = await fetch(`${LOAN_API_URL}/${id}/activate`, { method: "PATCH" });
-    
-    if (response.ok) {
-      alert("✅ Loan activated successfully!");
-      loadLoans();
-    } else {
-      const error = await response.json();
-      throw new Error(error.message);
+    const res = await fetch(`${LOAN_API_URL}/${id}/activate`, { method: "PATCH" });
+    if (!res.ok) {
+      const json = await res.json().catch(()=>null);
+      throw new Error((json && json.message) || `HTTP ${res.status}`);
     }
-  } catch (error) {
-    console.error("❌ Error activating loan:", error);
-    alert("Error: " + error.message);
+    alert("✅ Préstamo activado");
+    loadLoans();
+  } catch (err) {
+    console.error("Error activating loan:", err);
+    alert("Error: " + err.message);
   }
 }
 
 // ===================================
-// ❌ CANCELAR PRÉSTAMO
+// ❌ Cancelar préstamo (PATCH /{id}/cancel)
 // ===================================
 async function cancelLoan(id) {
-  if (!confirm("Are you sure you want to cancel this loan?")) return;
-
+  if (!confirm("¿Seguro que deseas cancelar este préstamo?")) return;
   try {
-    const response = await fetch(`${LOAN_API_URL}/${id}/cancel`, { method: "PATCH" });
-    
-    if (response.ok) {
-      alert("✅ Loan cancelled successfully!");
-      loadLoans();
-    } else {
-      const error = await response.json();
-      throw new Error(error.message);
+    const res = await fetch(`${LOAN_API_URL}/${id}/cancel`, { method: "PATCH" });
+    if (!res.ok) {
+      const json = await res.json().catch(()=>null);
+      throw new Error((json && json.message) || `HTTP ${res.status}`);
     }
-  } catch (error) {
-    console.error("❌ Error cancelling loan:", error);
-    alert("Error: " + error.message);
+    alert("✅ Préstamo cancelado");
+    loadLoans();
+  } catch (err) {
+    console.error("Error cancelling loan:", err);
+    alert("Error: " + err.message);
   }
 }
 
 // ===================================
-// 🔄 RESETEAR FORMULARIO
+// 🔄 Reset de formulario
 // ===================================
 function resetForm() {
   loanForm.reset();
   editingId = null;
-  saveBtn.textContent = "Add Loan";
+  saveBtn.textContent = "Agregar Préstamo";
   setMinDate();
 }
 
 // ===================================
-// 🔍 FILTRAR POR ESTADO
+// 🔍 Filtrar por estado (usa GET /status/{status})
 // ===================================
 async function filterByStatus() {
-  const status = document.getElementById("statusFilter").value;
-  
+  const status = (statusFilter && statusFilter.value) || '';
   try {
-    let url = LOAN_API_URL;
-    
-    if (status) {
-      url += `/status/${status}`;
-    }
-    
-    const response = await fetch(url);
-    const loans = await response.json();
-    
-    loanBody.innerHTML = "";
-    
-    if (loans.length === 0) {
-      loanBody.innerHTML = '<tr><td colspan="9" class="no-data">No loans found with this status</td></tr>';
-      return;
-    }
-    
-    loans.forEach(loan => {
-      const tr = document.createElement("tr");
-      tr.className = `status-${loan.status.toLowerCase()}`;
-      
-      tr.innerHTML = `
-        <td>${loan.id}</td>
-        <td>${loan.userCode}</td>
-        <td>${loan.classroomCode}</td>
-        <td>${formatDate(loan.loanDate)}</td>
-        <td>${loan.startTime}</td>
-        <td>${loan.endTime}</td>
-        <td class="purpose-cell">${loan.purpose}</td>
-        <td><span class="status-badge ${loan.status.toLowerCase()}">${loan.status}</span></td>
-        <td class="action-buttons">
-          <button class="btn-edit" onclick="editLoan(${loan.id})">✏️</button>
-          <button class="btn-delete" onclick="deleteLoan(${loan.id})">🗑️</button>
-          ${getStatusActions(loan)}
-        </td>
-      `;
-      loanBody.appendChild(tr);
-    });
-  } catch (error) {
-    console.error("❌ Error filtering loans:", error);
+    showTableLoading();
+    const url = status ? `${LOAN_API_URL}/status/${status}` : LOAN_API_URL;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const loans = await res.json();
+    renderLoansTable(loans);
+  } catch (err) {
+    console.error("Error filtering loans:", err);
+    loanBody.innerHTML = '<tr><td colspan="9" class="error">Error filtering loans</td></tr>';
   }
 }
 
 // ===================================
-// 📅 FORMATEAR FECHA
+// ✨ Utilidades
 // ===================================
 function formatDate(dateString) {
-  const date = new Date(dateString + 'T00:00:00');
-  return date.toLocaleDateString('es-ES', { 
-    year: 'numeric', 
-    month: '2-digit', 
-    day: '2-digit' 
-  });
+  if (!dateString) return '';
+  // Asumimos formato YYYY-MM-DD del backend
+  const d = new Date(dateString + 'T00:00:00');
+  if (isNaN(d)) return dateString;
+  return d.toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' });
 }
+
+// ===================================
+// 🌐 Función opcional para cambiar estado arbitrario (PATCH /{id}/status?status=...)
+// si en algún momento quieres usarla
+// ===================================
+async function changeLoanStatus(id, newStatus) {
+  try {
+    const res = await fetch(`${LOAN_API_URL}/${id}/status?status=${encodeURIComponent(newStatus)}`, {
+      method: "PATCH"
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error("Error changing status:", err);
+    throw err;
+  }
+}
+
+// Exportar funciones globales que se usan desde HTML inline (si aplica)
+window.editLoan = editLoan;
+window.deleteLoan = deleteLoan;
+window.activateLoan = activateLoan;
+window.cancelLoan = cancelLoan;
+window.filterByStatus = filterByStatus;

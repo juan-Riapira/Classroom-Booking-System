@@ -12,7 +12,9 @@ public class Loan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String userCode;       // Código del usuario que solicita
+    private String nameResponsible;       // Nombre completo
+    private String userType;   // STUDENT o TEACHER
+    private String academicProgram; // Programa académico 
     private Long classroomCode;  // Código del aula reservada
     private LocalDate loanDate;    // Fecha del préstamo
     private LocalTime startTime;   // Hora inicio
