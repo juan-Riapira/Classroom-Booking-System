@@ -19,9 +19,6 @@ public class LoanService {
     private LoanRepository loanRepository;
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     private ClassroomClient classroomClient;
 
     // Crear préstamo con validaciones profesionales
@@ -31,6 +28,7 @@ public class LoanService {
     }
 
     public LoanDTO createLoan(LoanDTO loanDTO) {
+        System.out.println("Creando préstamo para aula: " + loanDTO.getClassroomCode());
 
         // 2️⃣ Verificar que el aula existe y está disponible mediante Classroom-Service
         boolean aulaDisponible = classroomClient.isClassroomAvailable(loanDTO.getClassroomCode());
@@ -54,18 +52,24 @@ public class LoanService {
 
         // 4️⃣ Crear el préstamo
         Loan loan = convertToEntity(loanDTO);
-        loan.setStatus(loanDTO.getStatus() != null ? loanDTO.getStatus() : "RESERVED");
 
-        Loan savedLoan = loanRepository.save(loan);
-
-        // 5️⃣ Actualizar estado del aula a "OCCUPIED" en Classroom-Service
-        boolean actualizado = classroomClient.updateClassroomStatus(loanDTO.getClassroomCode(), "OCCUPIED");
-
-        if (!actualizado) {
-            System.out.println("⚠️ No se pudo actualizar el estado del aula en Classroom-Service.");
-        } else {
-            System.out.println("✅ Aula marcada como OCCUPIED correctamente.");
+        String status = loanDTO.getStatus() != null ? loanDTO.getStatus().toUpperCase() : "RESERVED";
+        loan.setStatus(status);
+        try {
+            switch (status) {
+                case "CANCELLED":
+                    classroomClient.updateClassroomStatus(loanDTO.getClassroomCode(), "AVAILABLE");
+                    break;
+                case "RESERVED":
+                case "ACTIVE":
+                default:
+                    classroomClient.updateClassroomStatus(loanDTO.getClassroomCode(), "OCCUPIED");
+                    break;
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Error updating classroom status: " + e.getMessage());
         }
+        Loan savedLoan = loanRepository.save(loan);
 
         // 6️⃣ Retornar DTO del préstamo creado
         return convertToDTO(savedLoan);
@@ -147,10 +151,16 @@ public class LoanService {
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new LoanServiceException.LoanNotFoundException(id));
 
-        if (!List.of("ACTIVE", "RESERVED", "CANCELLED").contains(newStatus)) {
+        if (!List.of("ACTIVATE", "RESERVED", "CANCELLED").contains(newStatus)) {
             throw new LoanServiceException.InvalidStatusException(newStatus);
         }
 
+        if (newStatus.equals("RESERVED")) {
+            classroomClient.updateClassroomStatus(loan.getClassroomCode(), "AVAILABLE");
+
+        }
+
+        classroomClient.releaseClassroom(loan.getClassroomCode());
         loan.setStatus(newStatus);
         Loan updatedLoan = loanRepository.save(loan);
         return convertToDTO(updatedLoan);
