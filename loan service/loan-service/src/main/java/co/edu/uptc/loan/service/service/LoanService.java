@@ -58,12 +58,12 @@ public class LoanService {
         try {
             switch (status) {
                 case "CANCELLED":
-                    classroomClient.updateClassroomStatus(loanDTO.getClassroomCode(), "AVAILABLE");
+                   // classroomClient.updateClassroomStatus(loanDTO.getClassroomCode(), "AVAILABLE");
                     break;
                 case "RESERVED":
                 case "ACTIVE":
                 default:
-                    classroomClient.updateClassroomStatus(loanDTO.getClassroomCode(), "OCCUPIED");
+                 //   classroomClient.updateClassroomStatus(loanDTO.getClassroomCode(), "OCCUPIED");
                     break;
             }
         } catch (Exception e) {
@@ -151,7 +151,7 @@ public class LoanService {
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new LoanServiceException.LoanNotFoundException(id));
 
-        if (!List.of("ACTIVATE", "RESERVED", "CANCELLED").contains(newStatus)) {
+        if (!List.of("ACTIVE", "RESERVED", "CANCELLED").contains(newStatus)) {
             throw new LoanServiceException.InvalidStatusException(newStatus);
         }
 
