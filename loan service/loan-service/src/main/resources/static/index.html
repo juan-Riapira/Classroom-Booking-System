@@ -11,7 +11,7 @@
 
   <header>Sistema de Préstamos - DTIC</header>
   
-  <!-- MENÚ HAMBURGUESA MODERNO -->
+  <!-- MENÚ -->
   <div class="menu-container">
     <button id="menu-toggle" class="menu-button">
       <span class="bar"></span>
@@ -30,13 +30,36 @@
   <main>
     <h2>Gestión de Préstamos de Aulas</h2>
 
-    <!-- Formulario de creación/edición -->
+    <!-- Formulario de creación -->
     <form id="loanForm">
       <input type="hidden" id="loanId">
 
       <div class="form-group">
-        <label for="userCode">Código de Usuario:</label>
-        <input type="text" id="userCode" required placeholder="Ingresa el código del usuario">
+        <label for="nameResponsible">Nombre Responsable:</label>
+        <input type="text" id="nameResponsible" required placeholder="Nombre completo del responsable">
+      </div>
+
+      <div class="form-group">
+        <label for="userType">Tipo de Usuario:</label>
+        <select id="userType" required>
+          <option value="">Selecciona tipo...</option>
+          <option value="STUDENT">Estudiante</option>
+          <option value="TEACHER">Profesor</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="academicProgram">Programa Académico:</label>
+        <select id="academicProgram" required>
+          <option value="">Selecciona un programa...</option>
+          <option value="Ingeniería de Sistemas y Computación">Ingeniería de Sistemas y Computación</option>
+          <option value="Ingeniería de Minas">Ingeniería de Minas</option>
+          <option value="Ingeniería Electrónica">Ingeniería Electrónica</option>
+          <option value="Ingeniería Geológica">Ingeniería Geológica</option>
+          <option value="Ingeniería Industrial">Ingeniería Industrial</option>
+          <option value="Contaduría Pública">Contaduría Pública</option>
+          <option value="Administración de Empresas">Administración de Empresas</option>
+        </select>
       </div>
 
       <div class="form-group">
@@ -79,7 +102,7 @@
       <button type="button" id="cancelBtn" class="btn-secondary" onclick="resetForm()">Cancelar</button>
     </form>
 
-    <!-- Tabla de préstamos -->
+    <!-- Tabla -->
     <section id="tableSection">
       <h3>Lista de Préstamos</h3>
       <div class="filter-section">
@@ -96,24 +119,26 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>Código Usuario</th>
+            <th>Responsable</th>
+            <th>Tipo</th>
+            <th>Programa</th>
             <th>Aula</th>
             <th>Fecha</th>
-            <th>Hora Inicio</th>
-            <th>Hora Fin</th>
+            <th>Inicio</th>
+            <th>Fin</th>
             <th>Propósito</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody id="loanBody">
-          <tr><td colspan="9" class="loading">Cargando préstamos...</td></tr>
+          <tr><td colspan="11" class="loading">Cargando préstamos...</td></tr>
         </tbody>
       </table>
     </section>
   </main>
 
-  <footer>© 2025 UPTC - Proyecto DTIC | Equipo de Ingeniería de Sistemas</footer>
+  <footer>© 2025 UPTC - Proyecto DTIC | Ingeniería de Sistemas</footer>
 
   <script src="js/menu.js"></script>
   <script src="js/loan.js"></script>

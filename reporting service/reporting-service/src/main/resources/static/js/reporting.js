@@ -1,48 +1,102 @@
 // URL base del backend
 const API_BASE = "http://localhost:8083/api/reports";
 
-// Función para mostrar resultados en el contenedor
+let currentChart = null; // Guardar el gráfico actual para poder destruirlo antes de dibujar otro
+
+// Función principal de visualización
 function showResult(title, data) {
     const resultDiv = document.getElementById("reportResult");
-    resultDiv.innerHTML = `<h3>${title}</h3>`;
+    resultDiv.innerHTML = `
+        <h3>${title}</h3>
+        <canvas id="reportChart"></canvas>
+        <div id="dataTable"></div>
+    `;
 
     if (!data || data.length === 0) {
-        resultDiv.innerHTML += `<p>No data found.</p>`;
+        resultDiv.innerHTML += `<p>No hay datos disponibles.</p>`;
         return;
     }
 
-    // Crear una tabla simple con los datos recibidos
-    const table = document.createElement("table");
-    table.border = "1";
-    table.style.width = "100%";
-    table.style.marginTop = "10px";
-    table.style.borderCollapse = "collapse";
+    // Preparar datos para la gráfica
+    const keys = Object.keys(data[0]);
+    const labels = [];
+    const values = [];
 
-    // Encabezados de la tabla (keys del primer objeto)
+    // Detectar campos relevantes automáticamente
+    const labelKey = keys.find(k => /program|classroom|hour|week|month/i.test(k)) || keys[0];
+    const valueKey = keys.find(k => /count|frequency/i.test(k)) || keys[1];
+
+    data.forEach(item => {
+        labels.push(item[labelKey]);
+        values.push(item[valueKey]);
+    });
+
+    // Crear el gráfico
+    const ctx = document.getElementById("reportChart").getContext("2d");
+    if (currentChart) currentChart.destroy(); // Evita superposición de gráficos
+
+    const chartType = /frequency|count/i.test(valueKey)
+        ? (data.length > 5 ? "bar" : "pie")
+        : "bar";
+
+    currentChart = new Chart(ctx, {
+        type: chartType,
+        data: {
+            labels: labels,
+            datasets: [{
+                label: title,
+                data: values,
+                backgroundColor: [
+                    "#FFCC00", "#1C1C1C", "#FFD700", "#333333", "#F4D03F"
+                ],
+                borderColor: "#000",
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true, position: "bottom" },
+                title: { display: true, text: title, font: { size: 18 } }
+            },
+            scales: chartType === "bar" ? {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: "Cantidad" }
+                },
+                x: {
+                    title: { display: true, text: labelKey }
+                }
+            } : {}
+        }
+    });
+
+    // ---- Agregar tabla debajo del gráfico ----
+    const dataTable = document.getElementById("dataTable");
+    const table = document.createElement("table");
+    table.classList.add("styled-table");
+
+    // Cabecera
     const headerRow = document.createElement("tr");
-    Object.keys(data[0]).forEach(key => {
+    keys.forEach(k => {
         const th = document.createElement("th");
-        th.textContent = key;
-        th.style.padding = "8px";
-        th.style.backgroundColor = "#f4d03f";
-        th.style.color = "#000";
+        th.textContent = k.toUpperCase();
         headerRow.appendChild(th);
     });
     table.appendChild(headerRow);
 
     // Filas de datos
-    data.forEach(item => {
-        const row = document.createElement("tr");
-        Object.values(item).forEach(value => {
+    data.forEach(row => {
+        const tr = document.createElement("tr");
+        keys.forEach(k => {
             const td = document.createElement("td");
-            td.textContent = value;
-            td.style.padding = "8px";
-            row.appendChild(td);
+            td.textContent = row[k];
+            tr.appendChild(td);
         });
-        table.appendChild(row);
+        table.appendChild(tr);
     });
 
-    resultDiv.appendChild(table);
+    dataTable.appendChild(table);
 }
 
 // ---- Funciones para consumir los endpoints ----
@@ -51,7 +105,7 @@ function showResult(title, data) {
 function getPeakHours() {
     fetch(`${API_BASE}/peak-hours`)
         .then(response => response.json())
-        .then(data => showResult("Horario con mayor frecuencia de préstamo", data))
+        .then(data => showResult(" Horario con mayor frecuencia de préstamo", data))
         .catch(error => console.error("Error:", error));
 }
 
@@ -59,7 +113,7 @@ function getPeakHours() {
 function getLowHours() {
     fetch(`${API_BASE}/low-hours`)
         .then(response => response.json())
-        .then(data => showResult("Horario con menor frecuencia de préstamo", data))
+        .then(data => showResult(" Horario con menor frecuencia de préstamo", data))
         .catch(error => console.error("Error:", error));
 }
 
@@ -67,7 +121,7 @@ function getLowHours() {
 function getWeeklyByProgram() {
     fetch(`${API_BASE}/weekly-by-program`)
         .then(response => response.json())
-        .then(data => showResult("Reportes semanales por programa de los prestamos realizados.", data))
+        .then(data => showResult(" Reportes semanales por programa", data))
         .catch(error => console.error("Error:", error));
 }
 
@@ -75,7 +129,7 @@ function getWeeklyByProgram() {
 function getMonthlyByProgram() {
     fetch(`${API_BASE}/monthly-by-program`)
         .then(response => response.json())
-        .then(data => showResult("Reportes mensuales por programa de los prestamos realizados.", data))
+        .then(data => showResult(" Reportes mensuales por programa", data))
         .catch(error => console.error("Error:", error));
 }
 
@@ -83,6 +137,6 @@ function getMonthlyByProgram() {
 function getClassroomFrequency() {
     fetch(`${API_BASE}/classroom-frequency`)
         .then(response => response.json())
-        .then(data => showResult("Frecuencia de préstamo de las salas", data))
+        .then(data => showResult(" Frecuencia de préstamo de las salas", data))
         .catch(error => console.error("Error:", error));
 }

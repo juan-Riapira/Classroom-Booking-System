@@ -41,13 +41,6 @@ public class LoanController {
         return ResponseEntity.ok(loan);
     }
 
-    // GET /api/loans/user/{userCode} - Préstamos por usuario
-    @GetMapping("/user/{userCode}")
-    public ResponseEntity<List<LoanDTO>> getLoansByUser(@PathVariable String userCode) {
-        List<LoanDTO> loans = loanService.getLoansByUser(userCode);
-        return ResponseEntity.ok(loans);
-    }
-
     @GetMapping("/classrooms")
     public ResponseEntity<List<Map<String, Object>>> getAllClassrooms() {
         List<Map<String, Object>> classrooms = loanService.listAllClassrooms();

@@ -36,12 +36,6 @@ public class LoanDataController {
         return ResponseEntity.ok(loans);
     }
     
-    @GetMapping("/by-user")
-    public ResponseEntity<List<LoanDTO>> getLoansByUser(@RequestParam String userCode) {
-        List<LoanDTO> loans = loanService.getLoansByUser(userCode);
-        return ResponseEntity.ok(loans);
-    }
-    
     @GetMapping("/by-classroom")
     public ResponseEntity<List<LoanDTO>> getLoansByClassroom(@RequestParam Long classroomCode) {
         List<LoanDTO> loans = loanService.getLoansByClassroom(classroomCode);

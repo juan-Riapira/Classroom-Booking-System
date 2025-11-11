@@ -17,10 +17,7 @@ public class LoanService {
 
     @Autowired
     private LoanRepository loanRepository;
-    
-    @Autowired
-    private UserService userService;
-    
+
     @Autowired
     private ClassroomClient classroomClient;
 
@@ -30,54 +27,53 @@ public class LoanService {
         return classroomClient.getAllClassrooms();
     }
 
-  public LoanDTO createLoan(LoanDTO loanDTO) {
-    // 1️⃣ Validar que el usuario existe y está activo
-    if (!userService.isUserActiveByCode(loanDTO.getUserCode())) {
-        throw new LoanServiceException.UserNotActiveException(loanDTO.getUserCode());
+    public LoanDTO createLoan(LoanDTO loanDTO) {
+        System.out.println("Creando préstamo para aula: " + loanDTO.getClassroomCode());
+
+        // 2️⃣ Verificar que el aula existe y está disponible mediante Classroom-Service
+        boolean aulaDisponible = classroomClient.isClassroomAvailable(loanDTO.getClassroomCode());
+
+        if (!aulaDisponible) {
+            throw new LoanServiceException.ClassroomNotAvailableException(
+                    "The classroom with ID " + loanDTO.getClassroomCode() + " is not available.");
+        }
+
+        // 3️⃣ Validar conflictos de horario con otros préstamos
+        List<Loan> conflicts = loanRepository.findConflictingLoans(
+                loanDTO.getClassroomCode(),
+                loanDTO.getLoanDate(),
+                loanDTO.getStartTime(),
+                loanDTO.getEndTime());
+
+        if (!conflicts.isEmpty()) {
+            throw new LoanServiceException.TimeConflictException(
+                    "Classroom ID " + loanDTO.getClassroomCode() + " has time conflicts.");
+        }
+
+        // 4️⃣ Crear el préstamo
+        Loan loan = convertToEntity(loanDTO);
+
+        String status = loanDTO.getStatus() != null ? loanDTO.getStatus().toUpperCase() : "RESERVED";
+        loan.setStatus(status);
+        try {
+            switch (status) {
+                case "CANCELLED":
+                   // classroomClient.updateClassroomStatus(loanDTO.getClassroomCode(), "AVAILABLE");
+                    break;
+                case "RESERVED":
+                case "ACTIVE":
+                default:
+                 //   classroomClient.updateClassroomStatus(loanDTO.getClassroomCode(), "OCCUPIED");
+                    break;
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Error updating classroom status: " + e.getMessage());
+        }
+        Loan savedLoan = loanRepository.save(loan);
+
+        // 6️⃣ Retornar DTO del préstamo creado
+        return convertToDTO(savedLoan);
     }
-
-    // 2️⃣ Verificar que el aula existe y está disponible mediante Classroom-Service
-    boolean aulaDisponible = classroomClient.isClassroomAvailable(loanDTO.getClassroomCode());
-
-    if (!aulaDisponible) {
-        throw new LoanServiceException.ClassroomNotAvailableException(
-            "The classroom with ID " + loanDTO.getClassroomCode() + " is not available."
-        );
-    }
-
-    // 3️⃣ Validar conflictos de horario con otros préstamos
-    List<Loan> conflicts = loanRepository.findConflictingLoans(
-        loanDTO.getClassroomCode(),
-        loanDTO.getLoanDate(),
-        loanDTO.getStartTime(),
-        loanDTO.getEndTime()
-    );
-
-    if (!conflicts.isEmpty()) {
-        throw new LoanServiceException.TimeConflictException(
-            "Classroom ID " + loanDTO.getClassroomCode() + " has time conflicts."
-        );
-    }
-
-    // 4️⃣ Crear el préstamo
-    Loan loan = convertToEntity(loanDTO);
-    loan.setStatus(loanDTO.getStatus() != null ? loanDTO.getStatus() : "RESERVED");
-
-    Loan savedLoan = loanRepository.save(loan);
-
-    // 5️⃣ Actualizar estado del aula a "OCCUPIED" en Classroom-Service
-    boolean actualizado = classroomClient.updateClassroomStatus(loanDTO.getClassroomCode(), "OCCUPIED");
-
-    if (!actualizado) {
-        System.out.println("⚠️ No se pudo actualizar el estado del aula en Classroom-Service.");
-    } else {
-        System.out.println("✅ Aula marcada como OCCUPIED correctamente.");
-    }
-
-    // 6️⃣ Retornar DTO del préstamo creado
-    return convertToDTO(savedLoan);
-}
-
 
     // Obtener todos los préstamos
     public List<LoanDTO> getAllLoans() {
@@ -94,14 +90,6 @@ public class LoanService {
         return convertToDTO(loan);
     }
 
-    // Obtener préstamos por usuario
-    public List<LoanDTO> getLoansByUser(String userCode) {
-        return loanRepository.findByUserCode(userCode)
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
     // Obtener préstamos por aula
     public List<LoanDTO> getLoansByClassroom(Long classroomCode) {
         return loanRepository.findByClassroomCode(classroomCode)
@@ -111,72 +99,73 @@ public class LoanService {
     }
 
     // Obtener préstamos por programa académico del usuario
+    // Obtener préstamos por programa académico
     public List<LoanDTO> getLoansByAcademicProgram(String academicProgram) {
-        return loanRepository.findByUser_AcademicProgram(academicProgram)
+        return loanRepository.findByAcademicProgram(academicProgram)
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     // === NUEVOS MÉTODOS CRUD ===
-    
+
     // Actualizar préstamo
     public LoanDTO updateLoan(Long id, LoanDTO loanDTO) {
         Loan existingLoan = loanRepository.findById(id)
                 .orElseThrow(() -> new LoanServiceException.LoanNotFoundException(id));
-        
-        // Validar usuario activo
-        if (!userService.isUserActiveByCode(loanDTO.getUserCode())) {
-            throw new LoanServiceException.UserNotActiveException(loanDTO.getUserCode());
-        }
-        
+
         // Verificar conflictos (excluyendo el préstamo actual)
         List<Loan> conflicts = loanRepository.findConflictingLoans(
-            loanDTO.getClassroomCode(),
-            loanDTO.getLoanDate(),
-            loanDTO.getStartTime(),
-            loanDTO.getEndTime()
-        ).stream().filter(l -> !l.getId().equals(id)).toList();
-        
+                loanDTO.getClassroomCode(),
+                loanDTO.getLoanDate(),
+                loanDTO.getStartTime(),
+                loanDTO.getEndTime()).stream().filter(l -> !l.getId().equals(id)).toList();
+
         if (!conflicts.isEmpty()) {
-         
+
         }
-        
+
         // Actualizar campos usando método helper
         updateEntityFromDTO(existingLoan, loanDTO);
-        
+
         Loan updatedLoan = loanRepository.save(existingLoan);
         return convertToDTO(updatedLoan);
     }
-    
+
     // Eliminar préstamo
     public void deleteLoan(Long id) {
         Loan loan = loanRepository.findById(id)
-            .orElseThrow();
+                .orElseThrow();
 
         if (!loanRepository.existsById(id)) {
             throw new LoanServiceException.LoanNotFoundException(id);
-            
+
         }
-         classroomClient.releaseClassroom(loan.getClassroomCode());
+        classroomClient.releaseClassroom(loan.getClassroomCode());
 
         loanRepository.deleteById(id);
     }
-    
+
     // Cambiar estado de préstamo
     public LoanDTO changeStatus(Long id, String newStatus) {
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new LoanServiceException.LoanNotFoundException(id));
-        
+
         if (!List.of("ACTIVE", "RESERVED", "CANCELLED").contains(newStatus)) {
             throw new LoanServiceException.InvalidStatusException(newStatus);
         }
-        
+
+        if (newStatus.equals("RESERVED")) {
+            classroomClient.updateClassroomStatus(loan.getClassroomCode(), "AVAILABLE");
+
+        }
+
+        classroomClient.releaseClassroom(loan.getClassroomCode());
         loan.setStatus(newStatus);
         Loan updatedLoan = loanRepository.save(loan);
         return convertToDTO(updatedLoan);
     }
-    
+
     // Buscar por estado
     public List<LoanDTO> getLoansByStatus(String status) {
         return loanRepository.findByStatus(status)
@@ -184,29 +173,28 @@ public class LoanService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-    
+
     // Buscar por rango de fechas
     public List<LoanDTO> getLoansByDateRange(String startDate, String endDate) {
         return loanRepository.findByDateRange(
-            java.time.LocalDate.parse(startDate),
-            java.time.LocalDate.parse(endDate)
-        ).stream()
-         .map(this::convertToDTO)
-         .collect(Collectors.toList());
+                java.time.LocalDate.parse(startDate),
+                java.time.LocalDate.parse(endDate)).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
-    
+
     // === MÉTODOS HELPER PARA GESTIÓN DE ESTADOS ===
-    
+
     // Activar préstamo (de RESERVED a ACTIVE)
     public LoanDTO activateLoan(Long id) {
         return changeStatus(id, "ACTIVE");
     }
-    
+
     // Cancelar préstamo
     public LoanDTO cancelLoan(Long id) {
         return changeStatus(id, "CANCELLED");
     }
-    
+
     // Obtener préstamos activos
     public List<LoanDTO> getActiveLoans() {
         return loanRepository.findByStatus("ACTIVE")
@@ -214,7 +202,7 @@ public class LoanService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-    
+
     // Obtener préstamos reservados (pendientes de activar)
     public List<LoanDTO> getReservedLoans() {
         return loanRepository.findByStatus("RESERVED")
@@ -222,7 +210,7 @@ public class LoanService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-    
+
     // Obtener préstamos cancelados
     public List<LoanDTO> getCancelledLoans() {
         return loanRepository.findByStatus("CANCELLED")
@@ -230,26 +218,28 @@ public class LoanService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-    
+
     // === MÉTODOS DE CONVERSIÓN ENTITY ↔ DTO ===
-    
+
     /**
      * Convierte Entity a DTO para respuestas API
      */
     private LoanDTO convertToDTO(Loan loan) {
         LoanDTO dto = new LoanDTO();
         dto.setId(loan.getId());
-        dto.setUserCode(loan.getUserCode());
+        dto.setAcademicProgram(loan.getAcademicProgram());
+        dto.setNameResponsible(loan.getNameResponsible());
+        dto.setUserType(loan.getUserType());
         dto.setClassroomCode(loan.getClassroomCode());
         dto.setLoanDate(loan.getLoanDate());
         dto.setStartTime(loan.getStartTime());
         dto.setEndTime(loan.getEndTime());
         dto.setPurpose(loan.getPurpose());
         dto.setStatus(loan.getStatus());
-        
+
         return dto;
     }
-    
+
     /**
      * Convierte DTO a Entity para persistencia
      */
@@ -259,7 +249,9 @@ public class LoanService {
         if (dto.getId() != null) {
             loan.setId(dto.getId());
         }
-        loan.setUserCode(dto.getUserCode());
+        loan.setAcademicProgram(dto.getAcademicProgram());
+        loan.setNameResponsible(dto.getNameResponsible());
+        loan.setUserType(dto.getUserType());
         loan.setClassroomCode(dto.getClassroomCode());
         loan.setLoanDate(dto.getLoanDate());
         loan.setStartTime(dto.getStartTime());
@@ -268,12 +260,14 @@ public class LoanService {
         loan.setStatus(dto.getStatus());
         return loan;
     }
-    
+
     /**
      * Actualiza una entidad existente con datos del DTO
      */
     private void updateEntityFromDTO(Loan loan, LoanDTO dto) {
-        loan.setUserCode(dto.getUserCode());
+        loan.setNameResponsible(dto.getNameResponsible());
+        loan.setUserType(dto.getUserType());
+        loan.setAcademicProgram(dto.getAcademicProgram());
         loan.setClassroomCode(dto.getClassroomCode());
         loan.setLoanDate(dto.getLoanDate());
         loan.setStartTime(dto.getStartTime());

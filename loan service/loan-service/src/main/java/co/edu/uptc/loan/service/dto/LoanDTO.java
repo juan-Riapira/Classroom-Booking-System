@@ -11,7 +11,9 @@ import lombok.Getter;
 @Data
 public class LoanDTO {
     private Long id;               // ID del préstamo (para respuestas)
-    private String userCode;       // Código del usuario que solicita
+    private String nameResponsible;       // Nombre completo
+    private String userType;   // STUDENT o TEACHER
+    private String academicProgram; // Programa académico 
     private Long classroomCode;  // Código del aula reservada
     private LocalDate loanDate;    // Fecha del préstamo
     private LocalTime startTime;   // Hora inicio

@@ -10,8 +10,9 @@
 <body>
 
   <header>Sistema de Reportes - DTIC</header>
-   <!-- MENÚ HAMBURGUESA MODERNO -->
-   <div class="menu-container">
+
+  <!-- MENÚ HAMBURGUESA MODERNO -->
+  <div class="menu-container">
     <button id="menu-toggle" class="menu-button">
       <span class="bar"></span>
       <span class="bar"></span>
@@ -30,11 +31,11 @@
     <h2>Reportes de Préstamo de Salas</h2>
 
     <div class="buttons">
-      <button onclick="getPeakHours()">Horario con mayor frecuencia de préstamo</button>
-      <button onclick="getLowHours()">Horario con menor frecuencia de préstamo</button>
-      <button onclick="getWeeklyByProgram()">Reportes semanales por programa de los préstamos realizados</button>
-      <button onclick="getMonthlyByProgram()">Reportes mensuales por programa de los préstamos realizados</button>
-      <button onclick="getClassroomFrequency()">Frecuencia de préstamo de las salas</button>
+      <button onclick="getPeakHours()"> Horario con mayor frecuencia</button>
+      <button onclick="getLowHours()"> Horario con menor frecuencia</button>
+      <button onclick="getWeeklyByProgram()"> Reporte semanal por programa</button>
+      <button onclick="getMonthlyByProgram()"> Reporte mensual por programa</button>
+      <button onclick="getClassroomFrequency()"> Frecuencia de préstamo por sala</button>
     </div>
 
     <div id="reportResult">
@@ -43,7 +44,9 @@
   </main>
 
   <footer>© 2025 UPTC - Proyecto DTIC | Equipo de Ingeniería de Sistemas</footer>
-
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"> </script>
   <script src="js/reporting.js"></script>
   <script src="js/menu.js"></script>
 </body>

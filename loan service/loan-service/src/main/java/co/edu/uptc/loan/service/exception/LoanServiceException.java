@@ -27,12 +27,6 @@ public class LoanServiceException extends RuntimeException {
         return errorCode;
     }
     
-    // Excepciones específicas para validaciones
-    public static class UserNotActiveException extends LoanServiceException {
-        public UserNotActiveException(String userCode) {
-            super("Usuario con código '" + userCode + "' no existe o no está activo", "USER_NOT_ACTIVE");
-        }
-    }
     
     public static class TimeConflictException extends LoanServiceException {
         public TimeConflictException(String classroomCode) {

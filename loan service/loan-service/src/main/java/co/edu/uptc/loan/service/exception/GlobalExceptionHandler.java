@@ -16,16 +16,6 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(LoanServiceException.UserNotActiveException.class)
-    public ResponseEntity<Map<String, Object>> handleUserNotActive(LoanServiceException.UserNotActiveException ex) {
-        return buildErrorResponse(
-            HttpStatus.BAD_REQUEST,
-            ex.getErrorCode(),
-            ex.getMessage(),
-            "El usuario especificado no existe o no está activo para crear préstamos"
-        );
-    }
-
     @ExceptionHandler(LoanServiceException.TimeConflictException.class)
     public ResponseEntity<Map<String, Object>> handleTimeConflict(LoanServiceException.TimeConflictException ex) {
         return buildErrorResponse(
