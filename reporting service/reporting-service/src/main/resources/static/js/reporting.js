@@ -105,7 +105,7 @@ function showResult(title, data) {
 function getPeakHours() {
     fetch(`${API_BASE}/peak-hours`)
         .then(response => response.json())
-        .then(data => showResult("⏰ Horario con mayor frecuencia de préstamo", data))
+        .then(data => showResult(" Horario con mayor frecuencia de préstamo", data))
         .catch(error => console.error("Error:", error));
 }
 
@@ -113,7 +113,7 @@ function getPeakHours() {
 function getLowHours() {
     fetch(`${API_BASE}/low-hours`)
         .then(response => response.json())
-        .then(data => showResult("🌙 Horario con menor frecuencia de préstamo", data))
+        .then(data => showResult(" Horario con menor frecuencia de préstamo", data))
         .catch(error => console.error("Error:", error));
 }
 
@@ -121,7 +121,7 @@ function getLowHours() {
 function getWeeklyByProgram() {
     fetch(`${API_BASE}/weekly-by-program`)
         .then(response => response.json())
-        .then(data => showResult("📆 Reportes semanales por programa", data))
+        .then(data => showResult(" Reportes semanales por programa", data))
         .catch(error => console.error("Error:", error));
 }
 
@@ -129,7 +129,7 @@ function getWeeklyByProgram() {
 function getMonthlyByProgram() {
     fetch(`${API_BASE}/monthly-by-program`)
         .then(response => response.json())
-        .then(data => showResult("📊 Reportes mensuales por programa", data))
+        .then(data => showResult(" Reportes mensuales por programa", data))
         .catch(error => console.error("Error:", error));
 }
 
@@ -137,6 +137,6 @@ function getMonthlyByProgram() {
 function getClassroomFrequency() {
     fetch(`${API_BASE}/classroom-frequency`)
         .then(response => response.json())
-        .then(data => showResult("🏫 Frecuencia de préstamo de las salas", data))
+        .then(data => showResult(" Frecuencia de préstamo de las salas", data))
         .catch(error => console.error("Error:", error));
 }
